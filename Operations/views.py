@@ -220,13 +220,13 @@ def Muni(request):
         remark = request.POST.get('remark')
         MobileNumber = request.POST.get('MobileNumber')
         print("MobileNumber",MobileNumber)
-        # MobileNumber=918870887201
+        MobileNumber=917093890777
         print(MobileNumber)
         ### SMS #################
         mobileno=[]
         message = "Dear {0}, Your SO no:{1} cannot be processed due to {2}. More information visit {3}. IOCL SALEM Terminal- MUNIYAPPAN".format(RoName,SO,remark,'www.ioclsalem.com')
         mobileno.append('{0}'.format(MobileNumber))
-        mobileno.append('919442613017') #919442613017 #918985534670
+        # mobileno.append('918870887201') #919442613017 #918985534670
         sender = 'MUNIMM'
         apikey = '1025ci03w5o077767a02l983n405q4620ne'
         baseurl = 'https://instantalerts.co/api/web/send/?apikey='+apikey
