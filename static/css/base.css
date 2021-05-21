@@ -1,0 +1,29 @@
+.root {
+  margin: auto;
+  margin-top: 50px;
+  width: 80%;
+}
+
+.heading {
+  background-color: #ffffff;
+  color: #0000ff;
+  width: 100%;
+  border: 2px red solid;
+  border-radius: 10px;
+  overflow: auto;
+}
+
+.headimg {
+  float: left;
+  /* position: relative;
+  left: 25rem; */
+  width: auto;
+  margin: 1rem;
+}
+
+.headtext {
+  margin-top: 2%;
+  font-size: 3rem;
+  float: right;
+  margin-right: 10%;
+}

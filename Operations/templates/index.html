@@ -1,0 +1,54 @@
+
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
+<script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; </script>
+<script src="{% static 'javascript/jquery.min.js' %}"></script>
+<script src="{% static 'javascript/popper.min.js' %}"></script>
+<script src="{% static 'javascript/bootstrap.min.js'%}"></script>
+<script src="{% static 'javascript/base.js' %}"></script>
+<head>
+    <meta charset="UTF-8">
+<!--    Auto Refresh-->
+<!--    <meta http-equiv="refresh" content="10">-->
+    <title>IOCL</title>
+</head>
+<body >
+    <div class='root'>
+    <div class="heading">
+    <img class="headimg" src="{% static 'image/iocl.gif' %}" alt="logo"">
+    <h1 class="headtext">Indian Oil Corporation Limited</h1>
+    </div>
+<div class="arrange">
+        <h1>Dry Out</h1>
+        <h3>Input files as follows:</h3>
+
+<ol>
+    <li>About to go Dry file</li>
+    <li>Out of Stock file</li>
+    <li>YV209D SAP downloaded file</li>
+    <li>YV208 SAP downloaded file</li>
+    <li>YV26 Previous day SAP downloaded file</li>
+    <li>MCSI RO list SAP downloaded file</li>
+</ol>
+<br>
+<div>
+    <form class= "my_form" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" title="Upload 1st excel" name="dryout" style="border: 1px solid black; padding: 5px;"
+               required="required" multiple>
+        <select id="dryout" name="select">
+                <option value="YV209D-dryout List">YV209D-dryout List</option>
+                <option value="Planned">Planned</option>
+                <option value="Invoiced">Invoiced</option>
+                <option value="Yesterday Supplied">Yesterday Supplied</option>
+                <option value="No indent List">No indent List</option>
+        </select>
+        <input type="submit" value="Run" style="border: 1px solid green; padding:8px; border-radius: 5px; cursor:
+        pointer;">
+    </form>
+</div>
+</div>
+</body>
+</html>

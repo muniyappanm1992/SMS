@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
+<head>
+    <meta charset="UTF-8">
+<!--    Auto Refresh-->
+<!--    <meta http-equiv="refresh" content="10">-->
+    <title>IOCL</title>
+</head>
+<body >
+    <div class="heading">
+    <img class="headimg" src="{% static 'image/iocl.gif' %}" alt="logo" width="100"
+         style="padding: 20px;">
+        <!-- <h1 class="headtext">Indian Oil Corporation Limited</h1> -->
+    </div>
+{% block content %}
+
+{% endblock %}
+<script src="{% static 'javascript/base.js' %}"></script>
+</body>
+</html>
