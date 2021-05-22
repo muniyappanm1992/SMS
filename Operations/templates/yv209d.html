@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="arrange">
+        <h1>YV209D Pending Indent</h1>
+        <br>
+    <div class=".table-responsive{-sm|-md|-lg|-xl} ">
+    <table id="myTable" class="table table-bordered">
+        <thead>
+            <tr>
+                <th scope="col">DO CODE</th>
+                <th scope="col">RO CODE</th>
+                <th scope="col">RO NAME</th>
+                <th scope="col">PRODUCT</th>
+                <th scope="col">Mobile Number</th>
+                <th scope="col">Mobile Type</th>
+                <th scope="col">Sales Document</th>
+                <th scope="col">REMARKS</th>
+                <th scope="col">Sales Group Desc.</th>
+                <th scope="col">SMS</th>
+                <th scope="col">DELETE</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for x in data %}
+            <tr>
+                <td>{{x.21}}</td>
+                <td>{{x.6}}</td>
+                <td class="roName">{{x.7}}</td>
+                <td>{{x.9}}</td>
+                <td class="MobileNumber">{{x.19}}</td>
+                <td>{{x.24}}</td>
+                <td class="SalesOrder">{{x.4}}</td>
+                <td class="remarks">{{x.14}}</td>
+                <td>{{x.13}}</td>
+                <td class="sms"><button>SMS</button></td>
+                <td  class="delete"><button>Delete</button></td>
+            {% endfor%}
+            </tr>
+        </tbody>
+    </table>
+</div>
+</div>
+{% endblock %}
