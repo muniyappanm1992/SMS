@@ -2,6 +2,7 @@
 {% block content %}
 <div class="arrange">
         <h1>Dry Out</h1>
+        <br>
         <h3>Input files as follows:</h3>
 
 <ol>
@@ -16,14 +17,16 @@
 <div>
     <form class= "my_form" method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        <input type="file" title="Upload 1st excel" name="dryout" style="border: 1px solid black; padding: 5px;"
+        <input type="file" title="Upload 1st excel" name="dryout" style="border: 1px solid black; padding: 5px;  border-radius: 5px;"
                required="required" multiple>
-        <select id="dryout" name="select">
-                <option value="YV209D-dryout List">YV209D-dryout List</option>
+        <select id="dryout" name="select" style="border: 1px solid black; padding: 8px;  border-radius: 5px;">
+                <option value="YV209D">YV209D</option>
+                <option value="YV208">YV208</option>
+                <option value="YV209D-dryout">YV209D-dryout</option>
                 <option value="Planned">Planned</option>
                 <option value="Invoiced">Invoiced</option>
                 <option value="Yesterday Supplied">Yesterday Supplied</option>
-                <option value="No indent List">No indent List</option>
+                <option value="No indent">No indent</option>
         </select>
         <input type="submit" value="Run" style="border: 1px solid green; padding:8px; border-radius: 5px; cursor:
         pointer;">

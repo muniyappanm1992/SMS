@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div>
+    <h1>Login</h1>
+    <br>
+    <form class= "my_form" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="username" style="border: 1px solid black; padding: 5px;  border-radius: 5px;"
+               required="required">
+        <input type="text" name="password" placeholder="password" style="border: 1px solid black; padding: 5px;  border-radius: 5px;"
+               required="required">
+        <input type="submit" value="Login" style="border: 1px solid green; padding:5px; border-radius: 5px; cursor:
+        pointer;">
+    </form>
+</div>
+<br>
+<div>
+    {% for message in messages %}
+    <h3>{{message}}</h3>
+    {% endfor %}
+</div>
+{% endblock %}

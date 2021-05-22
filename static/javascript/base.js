@@ -40,7 +40,7 @@ $(document).ready(function() {
     $('#myTable thead tr:eq(1) th').each( function (i) {
         var title = $(this).text();
         // $(this).html( '<input type="text" placeholder="Search '+title+'" style="width: 6rem;" />' );
-        $(this).html( '<input type="text" placeholder="Search.." style="width: 6.5rem; margin-left: -0.6rem;" />' );
+        $(this).html( '<input type="text" placeholder="Search.." style="width: 7.0rem; margin-left: 0rem;" />' );
         $( 'input', this ).on( 'keyup change', function () {
             if ( table.column(i).search() !== this.value ) {
                 table

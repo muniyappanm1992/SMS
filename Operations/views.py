@@ -1,6 +1,8 @@
 from io import BytesIO
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.models import User,auth
 import pandas as pd
 import os
 import json
@@ -98,118 +100,149 @@ def Dryout(data,data1,data2,data4,data3):
     #         print(message.sid)
     return [df_f1,df_plan,df_invoiced,df_f5,df_f4]
 def index(request):
-    now=datetime.now()
-    current_date=now.strftime("%d-%m-%Y")
-    current_time=now.strftime("%H%M")
-    global sap_density_list, tas_density_list,df,df_out_of_stock,df_about_to_dry,df_yv209d,df_yv208,df_yv26,df_yv207,df_list,df_ROlist,\
-    df_out_list,df_list_out,df_Phone
-    print(request.POST)
-    if "GET" == request.method:
-        return render(request, 'index.html')
-    else:
-        if 'dryout' in request.FILES:
-            # Here it is already not empty, and you can attach
-            excel_file1 = request.FILES.getlist('dryout')
-            for i in excel_file1:
-                print(i)
-                if str(i).lower().endswith('.csv'):
-                    df = pd.read_csv(i, index_col=False)
-                elif str(i).lower().endswith(('.xls', '.xlsx')):
-                    sheets=pd.read_excel(i,sheet_name=None)
-                    df = pd.concat(sheets[frame] for frame in sheets.keys())
-                df_list.append(df)
-            for x in df_list:
-                if {'SO NAME', 'DO NAME', 'SALES AREA', 'RO CODE', 'RO NAME', 'PRODUCT',
-                    'TOTAL HOURS STOCK OUT'}.issubset(
-                        x.columns):
-                    df_out_of_stock = x.copy()
-                    df_out_of_stock['STATUS CRITICAL'] = 'Out of Stock'
-                    df_out_of_stock['RO CODE'] = df_out_of_stock['RO CODE'].map(str)
-                    df_out_of_stock['PRODUCT'] = df_out_of_stock['PRODUCT'].map(str)
-                    df_out_of_stock['RO CODE'] = df_out_of_stock['RO CODE'].map(
-                        lambda m: '0000' + str(m) if len(m) < 8 else m)
-                    df_out_of_stock['RO-PRODUCT'] = df_out_of_stock['RO CODE'] + '-' + +df_out_of_stock['PRODUCT']
-                    df_out_of_stock = df_out_of_stock[
-                        ['SO NAME', 'DO NAME', 'SALES AREA', 'RO CODE', 'RO NAME', 'PRODUCT', 'STATUS CRITICAL',
-                         'RO-PRODUCT']]
-                elif {'SO NAME', 'DO NAME', 'SALES AREA', 'RO CODE', 'RO NAME', 'PRODUCT', 'EXPECTED DRYOUT DATE/ TIME',
-                      'STATUS CRITICAL'}.issubset(x.columns):
-                    df_about_to_dry = x.copy()
-                    df_about_to_dry['RO CODE'] = df_about_to_dry['RO CODE'].map(str)
-                    df_about_to_dry['PRODUCT'] = df_about_to_dry['PRODUCT'].map(str)
-                    df_about_to_dry['RO CODE'] = df_about_to_dry['RO CODE'].map(
-                        lambda m: '0000' + str(m) if len(m) < 8 else m)
-                    df_about_to_dry['RO-PRODUCT'] = df_about_to_dry['RO CODE'] + '-' + +df_about_to_dry['PRODUCT']
-                    df_about_to_dry = df_about_to_dry[
-                        ['SO NAME', 'DO NAME', 'SALES AREA', 'RO CODE', 'RO NAME', 'PRODUCT', 'STATUS CRITICAL',
-                         'RO-PRODUCT']]
-                elif {'Ship2Party', 'Sales Document', 'REMARKS', 'Name 1'}.issubset(x.columns):
-                    df_yv209d = x.copy()
-                elif {'Ship2Party', 'Shipment', 'Shp.Status', 'Vehicle'}.issubset(x.columns):
-                    df_yv208 = x.copy()
-                elif {'Rec. Code', 'Receiver', 'Document', 'InvoiceNo.'}.issubset(x.columns):
-                    df_yv26 = x.copy()
-                elif {'Ship2Party', 'Name', 'SOff.','Rg'}.issubset(x.columns):
-                    df_ROlist = x.copy()
-                elif {'Mobile Number', 'Ship-To Party', 'Sales Office','Mobile Type','Distribution Channel'}.issubset(x.columns):
-                    df=x.copy()
-                    df['Ship-To Party']=df['Ship-To Party'].astype('str')
-                    df['Ship-To Party']=df['Ship-To Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
-                    df_Phone = df.copy()
-            df_dryout_in = pd.concat([df_about_to_dry, df_out_of_stock], ignore_index=True)
-            df_out_list.append(df_dryout_in)
-            df_out_list.append(df_out_of_stock)
-            df_out_list.append(df_about_to_dry)
-            df_list_out=Dryout(df_dryout_in,df_yv209d,df_yv208,df_yv26,df_ROlist).copy()
-            select=["YV209D-dryout List",'Planned','Invoiced','Yesterday Supplied','No indent List']
-            if  'select' in request.POST:
-                selected_list = request.POST.get('select')
-                # add phone number
-                df_f1=pd.merge(left=df_list_out[select.index(selected_list)],right=df_Phone,how='inner',left_on=['RO CODE'],right_on=['Ship-To Party'])
-                print(df_f1.columns)
-                datalist=[]
-                arg={"header":df_f1.columns,"data":df_f1.values.tolist()}
-                if selected_list=="YV209D-dryout List":
-                    return render(request, 'yv209d-dry.html',arg)
-                elif selected_list=="Planned":
-                    return render(request, 'planned.html',arg)
-                elif selected_list=="No indent List":
-                    return render(request, 'noIndent.html',arg)
-                elif selected_list=="Invoiced":
-                    return render(request, 'invoiced.html',arg)
-                elif selected_list=="Yesterday Supplied":
-                    return render(request, 'yesterday_supplied.html',arg)
-                
-            # with BytesIO() as b:
-            #     writer = pd.ExcelWriter(b, engine='xlsxwriter')
-            #     for i, df_excel in enumerate(df_list_out):
-            #         df_excel.to_excel(writer, sheet_name=sheet_names[i], index=False)
-            #         # Indicate workbook and worksheet for formatting
-            #         workbook = writer.book
-            #         worksheet = writer.sheets[sheet_names[i]]
-            #         formater = workbook.add_format({'border': 1})
-            #         # Iterate through each column and set the width == the max length in that column. A padding length of 2
-            #         # is also added.
-            #         for j, col in enumerate(df_excel.columns):
-            #             # find length of column i
-            #             column_len = df_excel[col].astype(str).str.len().max()
-            #             # Setting the length if the column header is larger
-            #             # than the max column value length
-            #             column_len = max(column_len, len(col)) + 1
-            #             # set the column length
-            #             worksheet.set_column(j, j, column_len, formater)
-            #     writer.save()
-            #     # response = HttpResponse(b.getvalue(), content_type='application/vnd.ms-excel')
-            #     # response['Content-Disposition'] = 'attachment; filename="dryout status at {0} hrs on {1}.xlsx"'.format(current_time,current_date)
-            #     # return response
-            # return render(request, 'yv209d.html',arg)
-
-# def Dryout(request):
-#     print(request.POST)
-#     global df_list_out
-#     print(df_list_out)
-#     arg={"header":df_list_out[0].columns,"data":df_list_out[0].values.tolist()}
-#     return render(request, 'dryout.html',arg)
+        print("is_authenticated",request.user.is_authenticated)
+    # if request.user.is_authenticated:
+        now=datetime.now()
+        current_date=now.strftime("%d-%m-%Y")
+        current_time=now.strftime("%H%M")
+        global sap_density_list, tas_density_list,df,df_out_of_stock,df_about_to_dry,df_yv209d,df_yv208,df_yv26,df_yv207,df_list,df_ROlist,\
+        df_out_list,df_list_out,df_Phone
+        print(request.POST)
+        if "GET" == request.method:
+            return render(request, 'index.html')
+        else:
+            if 'dryout' in request.FILES:
+                # Here it is already not empty, and you can attach
+                excel_file1 = request.FILES.getlist('dryout')
+                for i in excel_file1:
+                    print(i)
+                    if str(i).lower().endswith('.csv'):
+                        df = pd.read_csv(i, index_col=False)
+                    elif str(i).lower().endswith(('.xls', '.xlsx')):
+                        sheets=pd.read_excel(i,sheet_name=None)
+                        df = pd.concat(sheets[frame] for frame in sheets.keys())
+                    df_list.append(df)
+                for x in df_list:
+                    if {'SO NAME', 'DO NAME', 'SALES AREA', 'RO CODE', 'RO NAME', 'PRODUCT',
+                        'TOTAL HOURS STOCK OUT'}.issubset(
+                            x.columns):
+                        df_out_of_stock = x.copy()
+                        df_out_of_stock['STATUS CRITICAL'] = 'Out of Stock'
+                        df_out_of_stock['RO CODE'] = df_out_of_stock['RO CODE'].map(str)
+                        df_out_of_stock['PRODUCT'] = df_out_of_stock['PRODUCT'].map(str)
+                        df_out_of_stock['RO CODE'] = df_out_of_stock['RO CODE'].map(
+                            lambda m: '0000' + str(m) if len(m) < 8 else m)
+                        df_out_of_stock['RO-PRODUCT'] = df_out_of_stock['RO CODE'] + '-' + +df_out_of_stock['PRODUCT']
+                        df_out_of_stock = df_out_of_stock[
+                            ['SO NAME', 'DO NAME', 'SALES AREA', 'RO CODE', 'RO NAME', 'PRODUCT', 'STATUS CRITICAL',
+                             'RO-PRODUCT']]
+                    elif {'SO NAME', 'DO NAME', 'SALES AREA', 'RO CODE', 'RO NAME', 'PRODUCT', 'EXPECTED DRYOUT DATE/ TIME',
+                          'STATUS CRITICAL'}.issubset(x.columns):
+                        df_about_to_dry = x.copy()
+                        df_about_to_dry['RO CODE'] = df_about_to_dry['RO CODE'].map(str)
+                        df_about_to_dry['PRODUCT'] = df_about_to_dry['PRODUCT'].map(str)
+                        df_about_to_dry['RO CODE'] = df_about_to_dry['RO CODE'].map(
+                            lambda m: '0000' + str(m) if len(m) < 8 else m)
+                        df_about_to_dry['RO-PRODUCT'] = df_about_to_dry['RO CODE'] + '-' + +df_about_to_dry['PRODUCT']
+                        df_about_to_dry = df_about_to_dry[
+                            ['SO NAME', 'DO NAME', 'SALES AREA', 'RO CODE', 'RO NAME', 'PRODUCT', 'STATUS CRITICAL',
+                             'RO-PRODUCT']]
+                    elif {'Ship2Party', 'Sales Document', 'REMARKS', 'Name 1'}.issubset(x.columns):
+                        df=x.copy()
+                        df['Ship2Party']=df['Ship2Party'].astype('str')
+                        df['Ship2Party']=df['Ship2Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
+                        df_yv209d = df.copy()
+                    elif {'Ship2Party', 'Shipment', 'Shp.Status', 'Vehicle'}.issubset(x.columns):
+                        df=x.copy()
+                        df['Ship2Party']=df['Ship2Party'].astype('str')
+                        df['Ship2Party']=df['Ship2Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
+                        df_yv208 = df.copy()
+                    elif {'Rec. Code', 'Receiver', 'Document', 'InvoiceNo.'}.issubset(x.columns):
+                        df_yv26 = x.copy()
+                    elif {'Ship2Party', 'Name', 'SOff.','Rg'}.issubset(x.columns):
+                        df_ROlist = x.copy()
+                    elif {'Mobile Number', 'Ship-To Party', 'Sales Office','Mobile Type','Distribution Channel'}.issubset(x.columns):
+                        df=x.copy()
+                        df['Ship-To Party']=df['Ship-To Party'].astype('str')
+                        df['Ship-To Party']=df['Ship-To Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
+                        df_Phone = df.copy()
+                df_dryout_in = pd.concat([df_about_to_dry, df_out_of_stock], ignore_index=True)
+                df_out_list.append(df_dryout_in)
+                df_out_list.append(df_out_of_stock)
+                df_out_list.append(df_about_to_dry)
+                df_list_out=Dryout(df_dryout_in,df_yv209d,df_yv208,df_yv26,df_ROlist).copy()
+                select=["YV209D-dryout",'Planned','Invoiced','Yesterday Supplied','No indent','YV209D','YV208']
+                if  'select' in request.POST:
+                    selected_list = request.POST.get('select')
+                    # add phone number
+                    if selected_list=="YV209D-dryout":
+                        df_f1=pd.merge(left=df_list_out[select.index(selected_list)],right=df_Phone,how='inner',left_on=['RO CODE'],right_on=['Ship-To Party'])
+                        print(df_f1.columns)
+                        datalist=[]
+                        arg={"header":df_f1.columns,"data":df_f1.values.tolist()}
+                        return render(request, 'yv209d-dry.html',arg)
+                    elif selected_list=="Planned":
+                        df_f1=pd.merge(left=df_list_out[select.index(selected_list)],right=df_Phone,how='inner',left_on=['RO CODE'],right_on=['Ship-To Party'])
+                        print(df_f1.columns)
+                        datalist=[]
+                        arg={"header":df_f1.columns,"data":df_f1.values.tolist()}
+                        return render(request, 'planned.html',arg)
+                    elif selected_list=="No indent":
+                        df_f1=pd.merge(left=df_list_out[select.index(selected_list)],right=df_Phone,how='inner',left_on=['RO CODE'],right_on=['Ship-To Party'])
+                        print(df_f1.columns)
+                        datalist=[]
+                        arg={"header":df_f1.columns,"data":df_f1.values.tolist()}
+                        return render(request, 'noIndent.html',arg)
+                    elif selected_list=="Invoiced":
+                        df_f1=pd.merge(left=df_list_out[select.index(selected_list)],right=df_Phone,how='inner',left_on=['RO CODE'],right_on=['Ship-To Party'])
+                        print(df_f1.columns)
+                        datalist=[]
+                        arg={"header":df_f1.columns,"data":df_f1.values.tolist()}
+                        return render(request, 'invoiced.html',arg)
+                    elif selected_list=="Yesterday Supplied":
+                        df_f1=pd.merge(left=df_list_out[select.index(selected_list)],right=df_Phone,how='inner',left_on=['RO CODE'],right_on=['Ship-To Party'])
+                        print(df_f1.columns)
+                        datalist=[]
+                        arg={"header":df_f1.columns,"data":df_f1.values.tolist()}
+                        return render(request, 'yesterday_supplied.html',arg)
+                    elif selected_list=="YV209D":
+                        df_f1=pd.merge(left=df_yv209d,right=df_Phone,how='inner',left_on=['Ship2Party'],right_on=['Ship-To Party'])
+                        print(df_f1.columns)
+                        datalist=[]
+                        arg={"header":df_f1.columns,"data":df_f1.values.tolist()}
+                        return render(request, 'yv209d.html',arg)
+                    elif selected_list=="YV208":
+                        df_f1=pd.merge(left=df_yv208,right=df_Phone,how='inner',left_on=['Ship2Party'],right_on=['Ship-To Party'])
+                        print(df_f1.columns)
+                        datalist=[]
+                        arg={"header":df_f1.columns,"data":df_f1.values.tolist()}
+                        return render(request, 'yv208.html',arg)
+                # with BytesIO() as b:
+                #     writer = pd.ExcelWriter(b, engine='xlsxwriter')
+                #     for i, df_excel in enumerate(df_list_out):
+                #         df_excel.to_excel(writer, sheet_name=sheet_names[i], index=False)
+                #         # Indicate workbook and worksheet for formatting
+                #         workbook = writer.book
+                #         worksheet = writer.sheets[sheet_names[i]]
+                #         formater = workbook.add_format({'border': 1})
+                #         # Iterate through each column and set the width == the max length in that column. A padding length of 2
+                #         # is also added.
+                #         for j, col in enumerate(df_excel.columns):
+                #             # find length of column i
+                #             column_len = df_excel[col].astype(str).str.len().max()
+                #             # Setting the length if the column header is larger
+                #             # than the max column value length
+                #             column_len = max(column_len, len(col)) + 1
+                #             # set the column length
+                #             worksheet.set_column(j, j, column_len, formater)
+                #     writer.save()
+                #     # response = HttpResponse(b.getvalue(), content_type='application/vnd.ms-excel')
+                #     # response['Content-Disposition'] = 'attachment; filename="dryout status at {0} hrs on {1}.xlsx"'.format(current_time,current_date)
+                #     # return response
+                # return render(request, 'yv209d.html',arg)
+    # else:
+    #     messages.info(request, 'Please login first..')
+    #     return redirect("/")
 
 def Muni(request):
     print(request.POST)
@@ -220,7 +253,7 @@ def Muni(request):
         remark = request.POST.get('remark')
         MobileNumber = request.POST.get('MobileNumber')
         print("MobileNumber",MobileNumber)
-        MobileNumber=917093890777
+        # MobileNumber=917093890777
         print(MobileNumber)
         ### SMS #################
         mobileno=[]
@@ -243,27 +276,21 @@ def Muni(request):
             data = {'code': 'Success'}
             js_data = json.dumps(data)
         return JsonResponse(data)
-#     '600010', message)
-# print (resp)
 
-# import requests
-# import time
+# def login(request):
+#     if request.method=='POST':
+#         username=request.POST['username']
+#         password=request.POST['password']
 
-# message = "Dear {0}, Your SO no:{1} cannot be processed due to {2}. More information visit {3}. IOCL SALEM Terminal- MUNIYAPPAN".format("Muniyappan M",308946313,"Credit block",'www.ioslsalem.com')
-# mobileno= '917093890777'
-# sender = 'MUNIMM'
-# apikey = '1025ci03w5o077767a02l983n405q4620ne'
-
-# baseurl = 'https://instantalerts.co/api/web/send/?apikey='+apikey
-
-# print(baseurl)
-# url= baseurl+'&sender='+sender+'&to='+mobileno+'&message='+message+'&format=json'
-# print(url)
-# for i in range(1):
-#     response = requests.get(url)
-#     time.sleep(2)
-# print(response)
-# # Check for HTTP codes other than 200
-# if response.status_code != 200:
-#     print('Status:', response, 'Problem with the request.')
-# exit()
+#         user=auth.authenticate(username=username,password=password)
+#         if user is not None:
+#             auth.login(request,user)
+#             return redirect("/index")
+#         else:
+#             messages.info(request,'invalid credentials')
+#             return render(request,'login.html')
+#     else:
+#         return render(request,'login.html')
+# def logout(request):
+#     auth.logout(request)
+#     return redirect("/")

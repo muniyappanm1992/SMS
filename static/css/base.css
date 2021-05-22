@@ -27,3 +27,26 @@
   float: right;
   margin-right: 10%;
 }
+.log{
+float:right;
+border-radius: 5px;}
+.copyright {
+  margin-top: 50px;
+  margin-bottom: 50px;
+  float: right;
+}
+table.dataTable.no-footer {
+  border: 1px solid rgb(216, 205, 243);
+}
+.table-bordered {
+  border: 1px solid rgb(247, 253, 249);
+}
+.table-bordered td,
+.table-bordered th {
+  border: 1px solid rgb(217, 236, 221);
+}
+table.dataTable thead th,
+table.dataTable thead td {
+  padding: 10px 10px;
+  border-bottom: 1px solid rgb(247, 217, 217);
+}
