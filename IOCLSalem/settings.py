@@ -82,9 +82,9 @@ if os.getenv('GAE_APPLICATION', None):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'HOST': '/cloudsql/dryout-salem:asia-south1:dryout',
+            'HOST': '/cloudsql/ioclsalem:asia-south1:ioclsalem-instance',
             'USER': 'root',
-            'PASSWORD': '4150',
+            'PASSWORD': 'Mana$hema11',
             'NAME': 'dryout',   
         }
     }

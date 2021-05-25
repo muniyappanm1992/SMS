@@ -1,10 +1,35 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="arrange">
-        <h1>Dry Out</h1>
+<h1>Dry Out</h1>
+<br>
+<div class="custom-control custom-switch">
+  <input type="checkbox" class="custom-control-input" id="switch1" name="local" onclick="myFunction()">
+  <label class="custom-control-label" for="switch1">Local input</label>
+</div>
+<br>
+<div id="sql">
+    <form class= "my_form" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="custom-control custom-switch">
+          <input type="checkbox" class="custom-control-input" id="switch2" name="export">
+          <label class="custom-control-label" for="switch2">Export excel</label>
+        </div>
+        <select id="loacl_web" name="select" style="border: 1px solid black; padding: 8px;  border-radius: 5px;">
+                <option value="YV209D">YV209D</option>
+                <option value="YV208">YV208</option>
+                <option value="YV209D-dryout">YV209D-dryout</option>
+                <option value="Planned">Planned</option>
+                <option value="Invoiced">Invoiced</option>
+                <option value="Yesterday Supplied">Yesterday Supplied</option>
+                <option value="No indent">No indent</option>
+        </select>
+        <input type="submit" value="Run" style="border: 1px solid green; padding:8px; border-radius: 5px; cursor:
+        pointer;">
+    </form>
+</div>
+<div id="local" class="arrange">
         <br>
         <h3>Input files as follows:</h3>
-
 <ol>
     <li>About to go Dry file</li>
     <li>Out of Stock file</li>
@@ -12,12 +37,16 @@
     <li>YV208 SAP downloaded file</li>
     <li>YV26 Previous day SAP downloaded file</li>
     <li>MCSI RO list SAP downloaded file</li>
-    <li>Mobile Number of Ro from SAP Tcode YVSMS</li>
+    <li>Mobile Number of RO from SAP Tcode YVSMS</li>
 </ol>
 <br>
 <div>
     <form class= "my_form" method="post" enctype="multipart/form-data">
         {% csrf_token %}
+        <div class="custom-control custom-switch">
+          <input type="checkbox" class="custom-control-input" id="switch3" name="export">
+          <label class="custom-control-label" for="switch3">Export excel</label>
+        </div>
         <input type="file" title="Upload 1st excel" name="dryout" style="border: 1px solid black; padding: 5px;  border-radius: 5px;"
                required="required" multiple>
         <select id="dryout" name="select" style="border: 1px solid black; padding: 8px;  border-radius: 5px;">
@@ -34,4 +63,38 @@
     </form>
 </div>
 </div>
+<script>
+
+    // we ready for fire action with JQery.
+      function myFunction() {
+        $( document ).ready(function() {
+      if ($("#switch1").is(":checked")){
+        console.log("myFunction");
+        $("#local").css("display", "block");
+        $("#sql").css("display", "none");
+      } else if ($("#switch1").not(":checked")) {
+        console.log("myFunction not");
+        $("#local").css("display", "none");
+        $("#sql").css("display", "block");
+      }
+    });
+  }
+  myFunction();
+
+  //     // we ready for fire action with JQery.
+  //     function exportfun() {
+  //       $( document ).ready(function() {
+  //     if ($(".exportCheck").is(":checked")){
+  //       console.log("exportfun");
+  //       $("#loacl_web").css("pointer-events", "none");
+  //       $("#dryout").css("pointer-events", "none");
+  //     } else if ($(".exportCheck").not(":checked")) {
+  //       console.log("exportfun not");
+  //       $("#loacl_web").css("pointer-events", "visible");
+  //       $("#dryout").css("pointer-events", "visible");
+  //     }
+  //   });
+  // }
+  // exportfun();
+    </script>
 {% endblock %}

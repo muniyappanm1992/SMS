@@ -52,7 +52,8 @@ $(document).ready(function() {
  
     var table = $('#myTable').DataTable( {
         orderCellsTop: true,
+        // // fixedHeader: true,
         // "scrollX": true,
-        fixedHeader: true,
+            scrollX: true
     } );
 } );

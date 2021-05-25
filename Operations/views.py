@@ -11,26 +11,17 @@ import requests
 from datetime import datetime
 from .models import Models,godryModel,outofstockModel,romobileModel,rolistModel,yv26Model,yv208Model,yv209dModel
 from django_pandas.io import read_frame
-from .column import Columns,godryColumn,outofstockColumn,romobileColumn,rolistColumn,yv26Column,yv208Column,yv209dColumn,HTMLColumn
-website='https://ioclsalem.el.r.appspot.com/'
-df_out_of_stock = pd.DataFrame()
-df_about_to_dry = pd.DataFrame()
-df_yv209d = pd.DataFrame()
-df_yv208 = pd.DataFrame()
-df_yv26 = pd.DataFrame()
-df_yv207 = pd.DataFrame()
-df_ROlist = pd.DataFrame()
-df_Phone=pd.DataFrame()
-df_list = []
-df_DryoutExport=[]
-select=["YV209D-dryout",'Planned','Invoiced','Yesterday Supplied','No indent','YV209D','YV208']
-sheet_names = ['YV209D Pending', 'Planned', 'Invoiced', 'Yesterday Supplied','no indent']
-def Dryout(dryout_df,yv209d_df,yv208_df,yv26_df,rolist_df,sql=False):
+from .column import Columns,godryColumn,outofstockColumn,romobileColumn,rolistColumn,yv26Column,yv208Column,yv209dColumn,HTMLColumn,MaterialCode,MaterianDescription,\
+sheet_names,select,website
+def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFrame(),yv26_df=pd.DataFrame(),rolist_df=pd.DataFrame(),sql=True):
+    def Code2Description(df,columnName,Material=MaterialCode,Description=MaterianDescription):
+        df.replace({columnName: Material}, {columnName: Description}, regex=True,inplace=True)
     if True: # yv26 block
         if sql:
             yv26_df=read_frame(yv26Model.objects.all(),index_col='id')
         yv26_df=yv26_df[['Rec. Code','Receiver','Mat.Code','Volume(KL)','PGI Date','InvoiceNo.']]
-        yv26_df['Mat.Code']=yv26_df['Mat.Code'].astype('int')
+        yv26_df['Mat.Code']=yv26_df['Mat.Code'].astype('str')
+        Code2Description(yv26_df,'Mat.Code')
         yv26_df['Rec. Code']=yv26_df['Rec. Code'].astype('str')
         yv26_df['Rec. Code']=yv26_df['Rec. Code'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
     if True: # dryout block
@@ -40,24 +31,23 @@ def Dryout(dryout_df,yv209d_df,yv208_df,yv26_df,rolist_df,sql=False):
             outofstock_df['STATUS CRITICAL'] = 'Out of Stock'
             dryout_df = pd.concat([godry_df, outofstock_df], ignore_index=True)
         dryout_df=dryout_df[['DO NAME','RO CODE','RO NAME','PRODUCT','STATUS CRITICAL','EXPECTED DRYOUT DATE/ TIME']] #'SUPPLY LOCATION','EXPECTED DRYOUT DATE/ TIME','TRANSIT TIME (HRS.)','STOCK SURVIVAL HOURS (HRS.)'
-        dryout_df['RO CODE']=dryout_df['RO CODE'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
-        dryout_df['PRODUCT']=dryout_df['PRODUCT'].map(lambda x:"16710" if x=='MS' else x)
-        dryout_df['PRODUCT']=dryout_df['PRODUCT'].map(lambda x:"17710" if x=='XP' else x)
-        dryout_df['PRODUCT']=dryout_df['PRODUCT'].map(lambda x:"50700" if x=='HSD' else x)
-        dryout_df['PRODUCT']=dryout_df['PRODUCT'].map(lambda x:"17095" if x=='XP95' else x)
-        dryout_df['PRODUCT']=dryout_df['PRODUCT'].astype('int')
         dryout_df['RO CODE']=dryout_df['RO CODE'].astype('str')
+        dryout_df['RO CODE']=dryout_df['RO CODE'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
         dryout_df['RO-PRODUCT'] = dryout_df['RO CODE'] + '-' + +dryout_df['PRODUCT'].astype('str')
     if True: # yv209d block
         if sql:
             yv209d_df=read_frame(yv209dModel.objects.all(),index_col='id')
         yv209d_df=yv209d_df[['Ship2Party','Name 1','RTD(in KM)','REMARKS','Sales Document','Material']]
+        yv209d_df['Material']=yv209d_df['Material'].astype('str')
+        Code2Description(yv209d_df,'Material')
         yv209d_df['Ship2Party']=yv209d_df['Ship2Party'].astype('str')
         yv209d_df['Ship2Party']=yv209d_df['Ship2Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
     if True: # yv208 block   
         if sql: 
             yv208_df=read_frame(yv208Model.objects.all(),index_col='id')
         yv208_df=yv208_df[['Material','Vehicle','Ship2Party','Name','Invoice']]
+        yv208_df['Material']=yv208_df['Material'].astype('str')
+        Code2Description(yv208_df,'Material')
         yv208_df['Ship2Party']=yv208_df['Ship2Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
         yv208_df['Ship2Party']=yv208_df['Ship2Party'].astype('str')
     if True: # rolist block
@@ -81,14 +71,24 @@ def Dryout(dryout_df,yv209d_df,yv208_df,yv26_df,rolist_df,sql=False):
     boolen_yv26=df_noindent['ROMaterial'].isin(yv26_df['ROMaterial'].values.tolist())
     df_yesterdaysupplied=pd.merge(left=df_noindent,right=yv26_df,how='inner',left_on=['RO CODE','PRODUCT'],right_on=['Rec. Code','Mat.Code'])
     df_noindent=df_noindent[~boolen_yv26]
+    print("List===",[df_yv209dpending,df_plan,df_invoiced,df_yesterdaysupplied,df_noindent])
     return [df_yv209dpending,df_plan,df_invoiced,df_yesterdaysupplied,df_noindent]
 def index(request):
+    df_out_of_stock = pd.DataFrame()
+    df_about_to_dry = pd.DataFrame()
+    df_yv209d = pd.DataFrame()
+    df_yv208 = pd.DataFrame()
+    df_yv26 = pd.DataFrame()
+    df_yv207 = pd.DataFrame()
+    df_ROlist = pd.DataFrame()
+    df_Phone=pd.DataFrame()
+    df_list = []
+    df_DryoutExport=[]
     if request.user.is_authenticated: #True:
         print("is_authenticated",request.user.is_authenticated)
         now=datetime.now()
         current_date=now.strftime("%d-%m-%Y")
         current_time=now.strftime("%H%M")
-        global df_out_of_stock,df_about_to_dry,df_yv209d,df_yv208,df_yv26,df_yv207,df_list,df_ROlist,df_DryoutExport,df_Phone
         print(request.POST)
         if "GET" == request.method:
             return render(request, 'index.html')
@@ -209,24 +209,9 @@ def index(request):
                     df['Ship-To Party']=df['Ship-To Party'].astype('str')
                     df['Ship-To Party']=df['Ship-To Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
                     df_Phone = df.copy()
-            print(df_about_to_dry.head(10))
             dryout_df = pd.concat([df_about_to_dry, df_out_of_stock], ignore_index=True)
-            df_DryoutExport=Dryout(dryout_df,df_yv209d,df_yv208,df_yv26,df_ROlist).copy()
-            df_DryoutExport.append(df_yv209d)
-            df_DryoutExport.append(df_yv208)
-            if True: # table web view
-                global select
-                left=['RO CODE','RO CODE','RO CODE','RO CODE','RO CODE','Ship2Party','Ship2Party']
-                sms_tables=["YV209D-dryout",'No indent','YV209D']
-                if  'select' in request.POST:
-                    selected_list = request.POST.get('select')
-                    df=pd.merge(left=df_DryoutExport[select.index(selected_list)],right=df_Phone,how='inner',left_on=[left[select.index(selected_list)]],right_on=['Ship-To Party'])
-                    df=df[HTMLColumn[select.index(selected_list)]]
-                    if set([selected_list]).issubset(set(sms_tables)):
-                        df['SMS']="SMS"
-                    arg={"header":df.columns,"data":df.values.tolist(),"select":selected_list}
-                    return render(request, 'dryout.html',arg)
-            if False: # export dryout list in excel and download in local machine.
+            df_DryoutExport=Dryout(dryout_df,df_yv209d,df_yv208,df_yv26,df_ROlist,False).copy()
+            if 'export' in request.POST: # export dryout list in excel and download in local machine
                 with BytesIO() as b:
                     writer = pd.ExcelWriter(b, engine='xlsxwriter')
                     for i, df_excel in enumerate(df_DryoutExport):
@@ -250,36 +235,91 @@ def index(request):
                     response['Content-Disposition'] = 'attachment; filename="dryout status at {0} hrs on {1}.xlsx"'.format(current_time,current_date)
                     return response
                     # return render(request, 'index.html')
+            elif 'select' in request.POST: # table web view
+                global select
+                df_DryoutExport.append(df_yv209d)
+                df_DryoutExport.append(df_yv208)
+                left=['RO CODE','RO CODE','RO CODE','RO CODE','RO CODE','Ship2Party','Ship2Party']
+                sms_tables=["YV209D-dryout",'No indent','YV209D']
+                selected_list = request.POST.get('select')
+                df=pd.merge(left=df_DryoutExport[select.index(selected_list)],right=df_Phone,how='inner',left_on=[left[select.index(selected_list)]],right_on=['Ship-To Party'])
+                df=df[HTMLColumn[select.index(selected_list)]]
+                if set([selected_list]).issubset(set(sms_tables)):
+                    df['SMS']="SMS"
+                arg={"header":df.columns,"data":df.values.tolist(),"select":selected_list}
+                return render(request, 'dryout.html',arg)
             else:
                 return render(request, 'index.html')
+        elif request.method=='POST' and 'dryout' not in request.FILES:
+            df_nodry=Dryout().copy()
+            if 'export' in request.POST: # export dryout list in excel and download in local machine
+                with BytesIO() as b:
+                    writer = pd.ExcelWriter(b, engine='xlsxwriter')
+                    for i, df_excel in enumerate(df_nodry):
+                        df_excel.to_excel(writer, sheet_name=sheet_names[i], index=False)
+                        # Indicate workbook and worksheet for formatting
+                        workbook = writer.book
+                        worksheet = writer.sheets[sheet_names[i]]
+                        formater = workbook.add_format({'border': 1})
+                        # Iterate through each column and set the width == the max length in that column. A padding length of 2
+                        # is also added.
+                        for j, col in enumerate(df_excel.columns):
+                            # find length of column i
+                            column_len = df_excel[col].astype(str).str.len().max()
+                            # Setting the length if the column header is larger
+                            # than the max column value length
+                            column_len = max(column_len, len(col)) + 2
+                            # set the column length
+                            worksheet.set_column(j, j, column_len, formater)
+                    writer.save()
+                    response = HttpResponse(b.getvalue(), content_type='application/vnd.ms-excel')
+                    response['Content-Disposition'] = 'attachment; filename="dryout status at {0} hrs on {1}.xlsx"'.format(current_time,current_date)
+                    return response
+                    # return render(request, 'index.html')
+            elif 'select' in request.POST: # table web view
+                left=['RO CODE','RO CODE','RO CODE','RO CODE','RO CODE','Ship2Party','Ship2Party']
+                sms_tables=["YV209D-dryout",'No indent','YV209D']
+                selected_list = request.POST.get('select')
+                df_nodry.append(read_frame(yv209dModel.objects.all(),index_col='id'))
+                df_nodry[-1]['Ship2Party']=df_nodry[-1]['Ship2Party'].astype('str')
+                df_nodry[-1]['Ship2Party']=df_nodry[-1]['Ship2Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
+                df_nodry.append(read_frame(yv208Model.objects.all(),index_col='id'))
+                df_nodry[-1]['Ship2Party']=df_nodry[-1]['Ship2Party'].astype('str')
+                df_nodry[-1]['Ship2Party']=df_nodry[-1]['Ship2Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
+                df_Phone=read_frame(romobileModel.objects.all(),index_col='id')
+                df_Phone['Ship-To Party']=df_Phone['Ship-To Party'].astype('str')
+                df_Phone['Ship-To Party']=df_Phone['Ship-To Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
+                print(select)
+                print("df_nodry=",df_nodry[select.index(selected_list)])
+                df=pd.merge(left=df_nodry[select.index(selected_list)],right=df_Phone,how='inner',left_on=[left[select.index(selected_list)]],right_on=['Ship-To Party'])
+                df=df[HTMLColumn[select.index(selected_list)]]
+                if set([selected_list]).issubset(set(sms_tables)):
+                    df['SMS']="SMS"
+                arg={"header":df.columns,"data":df.values.tolist(),"select":selected_list}
+                return render(request, 'dryout.html',arg)
     else:
         messages.info(request, 'Please login first..')
         return redirect("/")
 def Muni(request):
-
     print(request.POST)
-    global df_DryoutExport,website
     if  'array[]' in request.POST:
         array = request.POST.getlist('array[]')
         title=request.POST.get('title')
-        global select
+        print("title",title)
+        global select,website
         ind=select.index(title)
         print(HTMLColumn[ind])
         dictionary = dict(zip(HTMLColumn[ind], array))
         MobileNumber=dictionary['Mobile Number']
         # MobileNumber=917093890777
         ### SMS #################
-        # Here is one way to implement a switch construct
-        # Switcher is a dictionary data type here
-        def sms_body(title,dictionary):
-            switcher={
-                'YV209D':'Dear {0}, Your SO no:{1} cannot be processed due to {2}. More information visit {3}. IOCL SALEM Terminal- MUNIYAPPAN'.format("("+dictionary['Ship2Party']+") "+dictionary['Name 1_x'],dictionary['Sales Document'],dictionary['REMARKS'],'www.ioclsalem.com'),
-                'No indent':'Dear {0}, Your RO is about to go dry for {1} at {2}.You are requested to place indent immediately to avoid dryout please . More info visit {3}. IOCL SALEM- MUNIYAPPAN'.format("("+dictionary['RO CODE']+") "+dictionary['RO NAME'],dictionary['PRODUCT'],dictionary['EXPECTED DRYOUT DATE/ TIME'],'www.ioclsalem.com'),
-                'YV209D-dryout':'Dear {0}, Your SO no:{1} cannot be processed due to {2}. More information visit {3}. IOCL SALEM Terminal- MUNIYAPPAN'.format("("+dictionary['RO CODE']+") "+dictionary['RO NAME'],dictionary['Sales Document'],dictionary['REMARKS'],'www.ioclsalem.com'),
-            }
-            return switcher.get(title,"Not configured to sent sms..")
-        message=sms_body(title,dictionary)
         mobileno=[]
+        if title=='YV209D':
+            message = "Dear {0}, Your SO no:{1} cannot be processed due to {2}. More information visit {3}. IOCL SALEM Terminal- MUNIYAPPAN".format("("+dictionary['Ship2Party']+") "+dictionary['Name 1_x'],dictionary['Sales Document'],dictionary['REMARKS'],website)
+        elif title=="YV209D-dryout":
+                message = "Dear {0}, Your SO no:{1} cannot be processed due to {2}. More information visit {3}. IOCL SALEM Terminal- MUNIYAPPAN".format("("+dictionary['RO CODE']+") "+dictionary['RO NAME'],dictionary['Sales Document'],dictionary['REMARKS'],website)
+        elif title=='No indent':
+                message = "Dear {0}, Your RO is about to go dry for {1} at {2}.You are requested to place indent immediately to avoid dryout please . More info visit {3}. IOCL SALEM- MUNIYAPPAN".format("("+dictionary['RO CODE']+") "+dictionary['RO NAME'],dictionary['PRODUCT'],dictionary['EXPECTED DRYOUT DATE/ TIME'],website)
         mobileno.append('{0}'.format(MobileNumber))
         print("message= ",message)
         print("MobileNumber= ",MobileNumber)
@@ -290,21 +330,108 @@ def Muni(request):
         print(baseurl)
         for mobile in mobileno:
             url= baseurl+'&sender='+sender+'&to='+mobile+'&message='+message+'&format=json'
-            # print(url)
-            # response = requests.get(url)
-            # print(response.json())
-            # # Check for HTTP codes other than 200
-            # if response.status_code != 200:
-            #     print('Status:', response, 'Problem with the request.')
-            # ### SMS #################
+            print(url)
+            response = requests.get(url)
+            print(response.json())
+            # Check for HTTP codes other than 200
+            if response.status_code != 200:
+                print('Status:', response, 'Problem with the request.')
+            ### SMS #################
             data = {'code': 'Success'}
             js_data = json.dumps(data)
         return JsonResponse(data)
+def Upload(request):
+    df_list=[]
+    if request.user.is_superuser: #True:
+        print("super user")
+        if "GET" == request.method:
+            return render(request,'upload.html')
+        elif request.method=='POST' and 'dryout' in request.FILES:
+            # Here it is already not empty, and you can attach
+            excel_file1 = request.FILES.getlist('dryout')
+            for i in excel_file1: # uploaded ecel file to pandas dataframe
+                print(i)
+                df = pd.DataFrame()
+                if str(i).lower().endswith('.csv'):
+                    df = pd.read_csv(i, index_col=False)
+                elif str(i).lower().endswith(('.xls', '.xlsx')):
+                    sheets=pd.read_excel(i,sheet_name=None)
+                    df = pd.concat(sheets[frame] for frame in sheets.keys())
+                df_list.append(df)
+            if False: # delete all SQL table values
+                for Model in Models:
+                    Model.objects.all().delete()
+            if True: # upload excel file to mySQL database.
+                for df in df_list:
+                    for column in Columns:  
+                        if set(column).issubset(df.columns):
+                            if Columns.index(column)==0:
+                                j=Columns.index(column);
+                                Models[j].objects.all().delete() # delete selected SQL table values
+                                for i,data in enumerate(df.values.tolist()):
+                                    value=Models[j](i+1,df[Columns[j][0]][i],df[Columns[j][1]][i],df[Columns[j][2]][i],df[Columns[j][3]][i],\
+                                    df[Columns[j][4]][i],df[Columns[j][5]][i],df[Columns[j][6]][i],df[Columns[j][7]][i],df[Columns[j][8]][i],\
+                                    df[Columns[j][9]][i],df[Columns[j][10]][i],df[Columns[j][11]][i],df[Columns[j][12]][i],df[Columns[j][13]][i],df[Columns[j][14]][i],\
+                                    df[Columns[j][15]][i],df[Columns[j][16]][i],df[Columns[j][17]][i],df[Columns[j][18]][i],df[Columns[j][19]][i])
+                                    value.save()
+                            elif Columns.index(column)==1:
+                                j=Columns.index(column);
+                                Models[j].objects.all().delete() # delete selected SQL table values
+                                for i,data in enumerate(df.values.tolist()):
+                                    value=Models[j](i+1,df[Columns[j][0]][i],df[Columns[j][1]][i],df[Columns[j][2]][i],df[Columns[j][3]][i],\
+                                    df[Columns[j][4]][i],df[Columns[j][5]][i],df[Columns[j][6]][i],df[Columns[j][7]][i],df[Columns[j][8]][i],\
+                                    df[Columns[j][9]][i],df[Columns[j][10]][i],df[Columns[j][11]][i],df[Columns[j][12]][i],df[Columns[j][13]][i])
+                                    value.save()    
+                            elif Columns.index(column)==2:
+                                j=Columns.index(column);
+                                Models[j].objects.all().delete() # delete selected SQL table values
+                                for i,data in enumerate(df.values.tolist()):
+                                    value=Models[j](i+1,df[Columns[j][0]][i],df[Columns[j][1]][i],df[Columns[j][2]][i],df[Columns[j][3]][i],\
+                                    df[Columns[j][4]][i],df[Columns[j][5]][i],df[Columns[j][6]][i],df[Columns[j][7]][i],df[Columns[j][8]][i],\
+                                    df[Columns[j][9]][i],df[Columns[j][10]][i],df[Columns[j][11]][i],df[Columns[j][12]][i])
+                                    value.save()
+                            elif Columns.index(column)==3:
+                                j=Columns.index(column);
+                                Models[j].objects.all().delete() # delete selected SQL table values
+                                for i,data in enumerate(df.values.tolist()):
+                                    value=Models[j](i+1,df[Columns[j][0]][i],df[Columns[j][1]][i],df[Columns[j][2]][i],df[Columns[j][3]][i])
+                                    value.save()
+                            elif Columns.index(column)==4:
+                                j=Columns.index(column);
+                                Models[j].objects.all().delete() # delete selected SQL table values
+                                for i,data in enumerate(df.values.tolist()):
+                                    value=Models[j](i+1,df[Columns[j][0]][i],df[Columns[j][1]][i],df[Columns[j][2]][i],df[Columns[j][3]][i],\
+                                    df[Columns[j][4]][i],df[Columns[j][5]][i],df[Columns[j][6]][i],df[Columns[j][7]][i],df[Columns[j][8]][i],\
+                                    df[Columns[j][9]][i],df[Columns[j][10]][i],df[Columns[j][11]][i],df[Columns[j][12]][i],df[Columns[j][13]][i],df[Columns[j][14]][i],\
+                                    df[Columns[j][15]][i],df[Columns[j][16]][i],df[Columns[j][17]][i],df[Columns[j][18]][i],df[Columns[j][19]][i],df[Columns[j][20]][i])
+                                    value.save()  
+                            elif Columns.index(column)==5:
+                                j=Columns.index(column);
+                                Models[j].objects.all().delete() # delete selected SQL table values
+                                for i,data in enumerate(df.values.tolist()):
+                                    value=Models[j](i+1,df[Columns[j][0]][i],df[Columns[j][1]][i],df[Columns[j][2]][i],df[Columns[j][3]][i],\
+                                    df[Columns[j][4]][i],df[Columns[j][5]][i],df[Columns[j][6]][i],df[Columns[j][7]][i],df[Columns[j][8]][i],\
+                                    df[Columns[j][9]][i],df[Columns[j][10]][i],df[Columns[j][11]][i],df[Columns[j][12]][i])
+                                    value.save()
+                            elif Columns.index(column)==6:
+                                j=Columns.index(column);
+                                Models[j].objects.all().delete() # delete selected SQL table values
+                                for i,data in enumerate(df.values.tolist()):
+                                    value=Models[j](i+1,df[Columns[j][0]][i],df[Columns[j][1]][i],df[Columns[j][2]][i],df[Columns[j][3]][i],\
+                                    df[Columns[j][4]][i],df[Columns[j][5]][i],df[Columns[j][6]][i],df[Columns[j][7]][i],df[Columns[j][8]][i],\
+                                    df[Columns[j][9]][i],df[Columns[j][10]][i],df[Columns[j][11]][i],df[Columns[j][12]][i],df[Columns[j][13]][i],df[Columns[j][14]][i],\
+                                    df[Columns[j][15]][i],df[Columns[j][16]][i],df[Columns[j][17]][i],df[Columns[j][18]][i])
+                                    value.save()
+            if False: # read data from mySQL database to pandas dataframe
+                df=read_frame(yv208Model.objects.all(),index_col='id')
+            arg={"success":"Data uploaded susuccessfully..."}           
+            return render(request,'upload.html',arg)
 def login(request):
     if request.method=='POST':
         username=request.POST['username']
         password=request.POST['password']
         user=auth.authenticate(username=username,password=password)
+        print("user=",user)
         if user is not None:
             auth.login(request,user)
             return redirect("/index")

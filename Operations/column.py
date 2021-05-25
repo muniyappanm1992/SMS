@@ -14,6 +14,12 @@ plannedColumn=['DO NAME', 'RO CODE', 'RO NAME', 'PRODUCT', 'STATUS CRITICAL','Ve
 invoicedColumn=['DO NAME', 'RO CODE', 'RO NAME', 'PRODUCT', 'STATUS CRITICAL','Vehicle', 'Invoice','Mobile Number','Mobile Type']
 YesterdaySuppliedColumn=['DO NAME', 'RO CODE', 'RO NAME', 'PRODUCT', 'STATUS CRITICAL','Volume(KL)', 'PGI Date','InvoiceNo.','Mobile Number', 'Mobile Type']
 NoIndentColumn=['DO NAME', 'RO CODE', 'RO NAME', 'PRODUCT', 'STATUS CRITICAL','Mobile Number','Mobile Type','EXPECTED DRYOUT DATE/ TIME']
-YV209DColumn=['Sales Office','Ship2Party','Name 1_x','Material','OrderQty', 'Mobile Number', 'Mobile Type', 'Sales Document','REMARKS','RTD(in KM)','Sales Group Desc.','Requested deliv.date']
-YVColumn=['Sales Office','Ship2Party', 'Name','Material','Quantity', 'Shipment', 'Shp.Status', 'Vehicle', 'Delivery','Invoice', 'Mobile Number', 'Mobile Type']
-HTMLColumn=[yv209dDryoutColumn,plannedColumn,invoicedColumn,YesterdaySuppliedColumn,NoIndentColumn,YV209DColumn,YVColumn]
+YV209DColumn=['Sales Document','Sales Office','Sales Group Desc.','Ship2Party','Name 1_x','Material','OrderQty', 'Mobile Number', 'Mobile Type','REMARKS','RTD(in KM)'] #,'Requested deliv.date'
+YV208Column=['Sales Office','Ship2Party', 'Name','Material','Quantity', 'Shipment', 'Shp.Status', 'Vehicle', 'Delivery','Invoice', 'Mobile Number', 'Mobile Type']
+HTMLColumn=[yv209dDryoutColumn,plannedColumn,invoicedColumn,YesterdaySuppliedColumn,NoIndentColumn,YV209DColumn,YV208Column]
+MaterialCode=['16700','16710','17700','17710','17095','50700','32000','40000']
+MaterianDescription=['MS','MS','XP','XP','XP95','HSD','ATF','SKO']
+
+select=["YV209D-dryout",'Planned','Invoiced','Yesterday Supplied','No indent','YV209D','YV208']
+sheet_names = ['YV209D Pending', 'Planned', 'Invoiced', 'Yesterday Supplied','no indent']
+website="https://ioclsalem.el.r.appspot.com/"

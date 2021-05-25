@@ -9,5 +9,6 @@ urlpatterns = [
     path('logout', views.logout, name='logout'),
     path('index', views.index, name='index'),
     path('muni', views.Muni, name='muni'),
-    path('dryout', views.Dryout, name='dryout'),
+    # path('dryout', views.Dryout, name='dryout'),
+    path('upload', views.Upload, name='upload'),
 ]

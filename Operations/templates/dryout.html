@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="arrange">
+        <h1 class="title">{{select}}</h1>
+        <br>
+    <div class=".table-responsive{-sm|-md|-lg|-xl} ">
+    <table id="myTable" class="table table-bordered">
+        <thead>
+            <tr>
+                {% for head in header %}
+                <th scope="col">{{head}}</th>
+                {% endfor%}
+            </tr>
+        </thead>
+        <tbody>
+            {% for x in data %}
+            <tr>
+                {% for y in x %}
+                {% if y == "SMS" %}
+                <td class="sms"><button>{{y}}</button></td>
+                {% else %}
+                <td>{{y}}</td>
+                {% endif %}
+                {% endfor%}
+            {% endfor%}
+            </tr>
+        </tbody>
+    </table>
+</div>
+</div>
+{% endblock %}

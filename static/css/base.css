@@ -1,8 +1,8 @@
-/* .root {
+.root {
   margin: auto;
   margin-top: 50px;
-  width: 90%;
-} */
+  width: 95%;
+}
 
 .heading {
   background-color: #ffffff;
@@ -30,11 +30,21 @@
 .log {
   float: right;
   border-radius: 5px;
+  margin-left: 5px;
+}
+a,
+a:hover,
+a:focus,
+a:active {
+  text-decoration: none;
+  color: inherit;
 }
 .copyright {
   margin-top: 50px;
   margin-bottom: 50px;
+  margin-right: 50px;
   float: right;
+  font-size: 1.8rem;
 }
 table.dataTable.no-footer {
   border: 1px solid rgb(216, 205, 243);
@@ -51,7 +61,7 @@ table.dataTable thead td {
   padding: 10px 10px;
   border-bottom: 1px solid rgb(247, 217, 217);
 }
-/* div.dataTables_wrapper {
-  width: 800px;
-  margin: 0 auto;
-} */
+div.dataTables_wrapper {
+  width: 100%;
+  /* margin: 0 auto; */
+}

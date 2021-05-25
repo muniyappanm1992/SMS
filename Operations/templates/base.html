@@ -29,6 +29,11 @@
     <br>
         {% if user.is_authenticated %}
         <button class="log"><a href="/logout">logout</a></button>
+        <button class="log"><a href="/index">DashBoard</a></button>
+        {% if user.is_superuser %}
+        <button class="log"><a href="/upload">upload</a></button>
+        {%endif%}
+        <span class="log" style="font-size:1.3rem;">Hello, {{user.first_name}}</span>
         {% else %}
         <button class="log"><a href="/">login</a></button>
         {%endif%}
