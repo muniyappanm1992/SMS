@@ -1,8 +1,8 @@
-.root {
+/* .root {
   margin: auto;
   margin-top: 50px;
   width: 90%;
-}
+} */
 
 .heading {
   background-color: #ffffff;
@@ -27,9 +27,10 @@
   float: right;
   margin-right: 10%;
 }
-.log{
-float:right;
-border-radius: 5px;}
+.log {
+  float: right;
+  border-radius: 5px;
+}
 .copyright {
   margin-top: 50px;
   margin-bottom: 50px;
@@ -50,3 +51,7 @@ table.dataTable thead td {
   padding: 10px 10px;
   border-bottom: 1px solid rgb(247, 217, 217);
 }
+/* div.dataTables_wrapper {
+  width: 800px;
+  margin: 0 auto;
+} */

@@ -1,19 +1,18 @@
 $(document).ready(function() {
     $(".sms").click(function() {
-        var remarks=$(this).siblings(".remarks").text();
-        var roName=$(this).siblings(".roName").text();
-        var SalesOrder=$(this).siblings(".SalesOrder").text();
-        var MobileNumber=$(this).siblings(".MobileNumber").text();
-        console.log(remarks);
+        var array = [];
+        var remarks=$(this).siblings().each(function(){
+            array.push($(this).text())
+        });
+        title=$(".title").text()
+        console.log(array);
         $.ajax({
             url: "/muni",
             type: "POST",
             dataType: "json",
             data: {
-                RoName:roName,
-                SO:SalesOrder,
-                remark:remarks,
-                MobileNumber:MobileNumber,
+                array:array,
+                title:title,
                 csrfmiddlewaretoken: window.CSRF_TOKEN
                 },
             success : function(json) {
@@ -53,6 +52,7 @@ $(document).ready(function() {
  
     var table = $('#myTable').DataTable( {
         orderCellsTop: true,
-        fixedHeader: true
+        // "scrollX": true,
+        fixedHeader: true,
     } );
 } );

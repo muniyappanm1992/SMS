@@ -8,6 +8,6 @@ urlpatterns = [
     path('', views.login, name='login'),
     path('logout', views.logout, name='logout'),
     path('index', views.index, name='index'),
-    path('muni', views.sms, name='sms'),
+    path('muni', views.Muni, name='muni'),
     path('dryout', views.Dryout, name='dryout'),
 ]

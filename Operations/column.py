@@ -8,3 +8,12 @@ yv209dColumn=['Exception', 'DelCt', 'PRTY', 'Requested deliv.date', 'Sales Docum
 
 
 Columns=[godryColumn,outofstockColumn,romobileColumn,rolistColumn,yv26Column,yv208Column,yv209dColumn]
+
+yv209dDryoutColumn=['DO NAME', 'RO CODE', 'RO NAME', 'PRODUCT', 'STATUS CRITICAL', 'RTD(in KM)', 'REMARKS','Sales Document', 'Mobile Number','Mobile Type']
+plannedColumn=['DO NAME', 'RO CODE', 'RO NAME', 'PRODUCT', 'STATUS CRITICAL','Vehicle', 'Invoice','Mobile Number','Mobile Type']
+invoicedColumn=['DO NAME', 'RO CODE', 'RO NAME', 'PRODUCT', 'STATUS CRITICAL','Vehicle', 'Invoice','Mobile Number','Mobile Type']
+YesterdaySuppliedColumn=['DO NAME', 'RO CODE', 'RO NAME', 'PRODUCT', 'STATUS CRITICAL','Volume(KL)', 'PGI Date','InvoiceNo.','Mobile Number', 'Mobile Type']
+NoIndentColumn=['DO NAME', 'RO CODE', 'RO NAME', 'PRODUCT', 'STATUS CRITICAL','Mobile Number','Mobile Type','EXPECTED DRYOUT DATE/ TIME']
+YV209DColumn=['Sales Office','Ship2Party','Name 1_x','Material','OrderQty', 'Mobile Number', 'Mobile Type', 'Sales Document','REMARKS','RTD(in KM)','Sales Group Desc.','Requested deliv.date']
+YVColumn=['Sales Office','Ship2Party', 'Name','Material','Quantity', 'Shipment', 'Shp.Status', 'Vehicle', 'Delivery','Invoice', 'Mobile Number', 'Mobile Type']
+HTMLColumn=[yv209dDryoutColumn,plannedColumn,invoicedColumn,YesterdaySuppliedColumn,NoIndentColumn,YV209DColumn,YVColumn]

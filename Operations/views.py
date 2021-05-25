@@ -11,7 +11,8 @@ import requests
 from datetime import datetime
 from .models import Models,godryModel,outofstockModel,romobileModel,rolistModel,yv26Model,yv208Model,yv209dModel
 from django_pandas.io import read_frame
-from .column import Columns,godryColumn,outofstockColumn,romobileColumn,rolistColumn,yv26Column,yv208Column,yv209dColumn
+from .column import Columns,godryColumn,outofstockColumn,romobileColumn,rolistColumn,yv26Column,yv208Column,yv209dColumn,HTMLColumn
+website='https://ioclsalem.el.r.appspot.com/'
 df_out_of_stock = pd.DataFrame()
 df_about_to_dry = pd.DataFrame()
 df_yv209d = pd.DataFrame()
@@ -22,6 +23,7 @@ df_ROlist = pd.DataFrame()
 df_Phone=pd.DataFrame()
 df_list = []
 df_DryoutExport=[]
+select=["YV209D-dryout",'Planned','Invoiced','Yesterday Supplied','No indent','YV209D','YV208']
 sheet_names = ['YV209D Pending', 'Planned', 'Invoiced', 'Yesterday Supplied','no indent']
 def Dryout(dryout_df,yv209d_df,yv208_df,yv26_df,rolist_df,sql=False):
     if True: # yv26 block
@@ -37,7 +39,7 @@ def Dryout(dryout_df,yv209d_df,yv208_df,yv26_df,rolist_df,sql=False):
             outofstock_df=read_frame(outofstockModel.objects.all(),index_col='id')
             outofstock_df['STATUS CRITICAL'] = 'Out of Stock'
             dryout_df = pd.concat([godry_df, outofstock_df], ignore_index=True)
-        dryout_df=dryout_df[['DO NAME','RO CODE','RO NAME','PRODUCT','STATUS CRITICAL']] #'SUPPLY LOCATION','EXPECTED DRYOUT DATE/ TIME','TRANSIT TIME (HRS.)','STOCK SURVIVAL HOURS (HRS.)'
+        dryout_df=dryout_df[['DO NAME','RO CODE','RO NAME','PRODUCT','STATUS CRITICAL','EXPECTED DRYOUT DATE/ TIME']] #'SUPPLY LOCATION','EXPECTED DRYOUT DATE/ TIME','TRANSIT TIME (HRS.)','STOCK SURVIVAL HOURS (HRS.)'
         dryout_df['RO CODE']=dryout_df['RO CODE'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
         dryout_df['PRODUCT']=dryout_df['PRODUCT'].map(lambda x:"16710" if x=='MS' else x)
         dryout_df['PRODUCT']=dryout_df['PRODUCT'].map(lambda x:"17710" if x=='XP' else x)
@@ -173,9 +175,10 @@ def index(request):
                     df_out_of_stock['RO CODE'] = df_out_of_stock['RO CODE'].map(
                         lambda m: '0000' + str(m) if len(m) < 8 else m)
                     df_out_of_stock['RO-PRODUCT'] = df_out_of_stock['RO CODE'] + '-' + +df_out_of_stock['PRODUCT']
+                    df_out_of_stock['EXPECTED DRYOUT DATE/ TIME']="NA"
                     df_out_of_stock = df_out_of_stock[
                         ['SO NAME', 'DO NAME', 'SALES AREA', 'RO CODE', 'RO NAME', 'PRODUCT', 'STATUS CRITICAL',
-                            'RO-PRODUCT']]
+                            'RO-PRODUCT','EXPECTED DRYOUT DATE/ TIME']]
                 elif {'SO NAME', 'DO NAME', 'SALES AREA', 'RO CODE', 'RO NAME', 'PRODUCT', 'EXPECTED DRYOUT DATE/ TIME',
                         'STATUS CRITICAL'}.issubset(x.columns):
                     df_about_to_dry = x.copy()
@@ -186,7 +189,7 @@ def index(request):
                     df_about_to_dry['RO-PRODUCT'] = df_about_to_dry['RO CODE'] + '-' + +df_about_to_dry['PRODUCT']
                     df_about_to_dry = df_about_to_dry[
                         ['SO NAME', 'DO NAME', 'SALES AREA', 'RO CODE', 'RO NAME', 'PRODUCT', 'STATUS CRITICAL',
-                            'RO-PRODUCT']]
+                            'RO-PRODUCT','EXPECTED DRYOUT DATE/ TIME']]
                 elif {'Ship2Party', 'Sales Document', 'REMARKS', 'Name 1'}.issubset(x.columns):
                     df=x.copy()
                     df['Ship2Party']=df['Ship2Party'].astype('str')
@@ -209,47 +212,20 @@ def index(request):
             print(df_about_to_dry.head(10))
             dryout_df = pd.concat([df_about_to_dry, df_out_of_stock], ignore_index=True)
             df_DryoutExport=Dryout(dryout_df,df_yv209d,df_yv208,df_yv26,df_ROlist).copy()
+            df_DryoutExport.append(df_yv209d)
+            df_DryoutExport.append(df_yv208)
             if True: # table web view
-                select=["YV209D-dryout",'Planned','Invoiced','Yesterday Supplied','No indent','YV209D','YV208']
+                global select
+                left=['RO CODE','RO CODE','RO CODE','RO CODE','RO CODE','Ship2Party','Ship2Party']
+                sms_tables=["YV209D-dryout",'No indent','YV209D']
                 if  'select' in request.POST:
                     selected_list = request.POST.get('select')
-                    # add phone number
-                    if selected_list=="YV209D-dryout":
-                        df=pd.merge(left=df_DryoutExport[select.index(selected_list)],right=df_Phone,how='inner',left_on=['RO CODE'],right_on=['Ship-To Party'])
-                        print(df.columns)
-                        df_DryoutExport
-                        arg={"header":df.columns,"data":df.values.tolist()}
-                        return render(request, 'yv209d-dry.html',arg)
-                    elif selected_list=="Planned":
-                        df=pd.merge(left=df_DryoutExport[select.index(selected_list)],right=df_Phone,how='inner',left_on=['RO CODE'],right_on=['Ship-To Party'])
-                        df_DryoutExport
-                        arg={"header":df.columns,"data":df.values.tolist()}
-                        return render(request, 'planned.html',arg)
-                    elif selected_list=="No indent":
-                        df=pd.merge(left=df_DryoutExport[select.index(selected_list)],right=df_Phone,how='inner',left_on=['RO CODE'],right_on=['Ship-To Party'])
-                        df_DryoutExport
-                        arg={"header":df.columns,"data":df.values.tolist()}
-                        return render(request, 'noIndent.html',arg)
-                    elif selected_list=="Invoiced":
-                        df=pd.merge(left=df_DryoutExport[select.index(selected_list)],right=df_Phone,how='inner',left_on=['RO CODE'],right_on=['Ship-To Party'])
-                        df_DryoutExport
-                        arg={"header":df.columns,"data":df.values.tolist()}
-                        return render(request, 'invoiced.html',arg)
-                    elif selected_list=="Yesterday Supplied":
-                        df=pd.merge(left=df_DryoutExport[select.index(selected_list)],right=df_Phone,how='inner',left_on=['RO CODE'],right_on=['Ship-To Party'])
-                        df_DryoutExport
-                        arg={"header":df.columns,"data":df.values.tolist()}
-                        return render(request, 'yesterday_supplied.html',arg)
-                    elif selected_list=="YV209D":
-                        df=pd.merge(left=df_yv209d,right=df_Phone,how='inner',left_on=['Ship2Party'],right_on=['Ship-To Party'])
-                        df_DryoutExport
-                        arg={"header":df.columns,"data":df.values.tolist()}
-                        return render(request, 'yv209d.html',arg)
-                    elif selected_list=="YV208":
-                        df=pd.merge(left=df_yv208,right=df_Phone,how='inner',left_on=['Ship2Party'],right_on=['Ship-To Party'])
-                        df_DryoutExport
-                        arg={"header":df.columns,"data":df.values.tolist()}
-                        return render(request, 'yv208.html',arg)
+                    df=pd.merge(left=df_DryoutExport[select.index(selected_list)],right=df_Phone,how='inner',left_on=[left[select.index(selected_list)]],right_on=['Ship-To Party'])
+                    df=df[HTMLColumn[select.index(selected_list)]]
+                    if set([selected_list]).issubset(set(sms_tables)):
+                        df['SMS']="SMS"
+                    arg={"header":df.columns,"data":df.values.tolist(),"select":selected_list}
+                    return render(request, 'dryout.html',arg)
             if False: # export dryout list in excel and download in local machine.
                 with BytesIO() as b:
                     writer = pd.ExcelWriter(b, engine='xlsxwriter')
@@ -279,21 +255,34 @@ def index(request):
     else:
         messages.info(request, 'Please login first..')
         return redirect("/")
-def sms(request):
+def Muni(request):
+
     print(request.POST)
-    global df_DryoutExport
-    if  'RoName' in request.POST:
-        RoName = request.POST.get('RoName')
-        SO = request.POST.get('SO')
-        remark = request.POST.get('remark')
-        MobileNumber = request.POST.get('MobileNumber')
-        print("MobileNumber",MobileNumber)
-        MobileNumber=917093890777
-        print(MobileNumber)
+    global df_DryoutExport,website
+    if  'array[]' in request.POST:
+        array = request.POST.getlist('array[]')
+        title=request.POST.get('title')
+        global select
+        ind=select.index(title)
+        print(HTMLColumn[ind])
+        dictionary = dict(zip(HTMLColumn[ind], array))
+        MobileNumber=dictionary['Mobile Number']
+        # MobileNumber=917093890777
         ### SMS #################
+        # Here is one way to implement a switch construct
+        # Switcher is a dictionary data type here
+        def sms_body(title,dictionary):
+            switcher={
+                'YV209D':'Dear {0}, Your SO no:{1} cannot be processed due to {2}. More information visit {3}. IOCL SALEM Terminal- MUNIYAPPAN'.format("("+dictionary['Ship2Party']+") "+dictionary['Name 1_x'],dictionary['Sales Document'],dictionary['REMARKS'],'www.ioclsalem.com'),
+                'No indent':'Dear {0}, Your RO is about to go dry for {1} at {2}.You are requested to place indent immediately to avoid dryout please . More info visit {3}. IOCL SALEM- MUNIYAPPAN'.format("("+dictionary['RO CODE']+") "+dictionary['RO NAME'],dictionary['PRODUCT'],dictionary['EXPECTED DRYOUT DATE/ TIME'],'www.ioclsalem.com'),
+                'YV209D-dryout':'Dear {0}, Your SO no:{1} cannot be processed due to {2}. More information visit {3}. IOCL SALEM Terminal- MUNIYAPPAN'.format("("+dictionary['RO CODE']+") "+dictionary['RO NAME'],dictionary['Sales Document'],dictionary['REMARKS'],'www.ioclsalem.com'),
+            }
+            return switcher.get(title,"Not configured to sent sms..")
+        message=sms_body(title,dictionary)
         mobileno=[]
-        message = "Dear {0}, Your SO no:{1} cannot be processed due to {2}. More information visit {3}. IOCL SALEM Terminal- MUNIYAPPAN".format(RoName,SO,remark,'www.ioclsalem.com')
         mobileno.append('{0}'.format(MobileNumber))
+        print("message= ",message)
+        print("MobileNumber= ",MobileNumber)
         # mobileno.append('918870887201') #919442613017 #918985534670
         sender = 'MUNIMM'
         apikey = '1025ci03w5o077767a02l983n405q4620ne'
@@ -301,13 +290,13 @@ def sms(request):
         print(baseurl)
         for mobile in mobileno:
             url= baseurl+'&sender='+sender+'&to='+mobile+'&message='+message+'&format=json'
-            print(url)
-            response = requests.get(url)
-            print(response.json())
-            # Check for HTTP codes other than 200
-            if response.status_code != 200:
-                print('Status:', response, 'Problem with the request.')
-            ### SMS #################
+            # print(url)
+            # response = requests.get(url)
+            # print(response.json())
+            # # Check for HTTP codes other than 200
+            # if response.status_code != 200:
+            #     print('Status:', response, 'Problem with the request.')
+            # ### SMS #################
             data = {'code': 'Success'}
             js_data = json.dumps(data)
         return JsonResponse(data)
