@@ -13,12 +13,14 @@ from .models import Models,godryModel,outofstockModel,romobileModel,rolistModel,
 from django_pandas.io import read_frame
 from .column import Columns,godryColumn,outofstockColumn,romobileColumn,rolistColumn,yv26Column,yv208Column,yv209dColumn,HTMLColumn,MaterialCode,MaterianDescription,\
 sheet_names,select,website
+from django.conf import settings
+import sqlalchemy
 def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFrame(),yv26_df=pd.DataFrame(),rolist_df=pd.DataFrame(),sql=True):
     def Code2Description(df,columnName,Material=MaterialCode,Description=MaterianDescription):
         df.replace({columnName: Material}, {columnName: Description}, regex=True,inplace=True)
     if True: # yv26 block
         if sql:
-            yv26_df=read_frame(yv26Model.objects.all(),index_col='id')
+            yv26_df=read_frame(yv26Model.objects.all())
         yv26_df=yv26_df[['Rec. Code','Receiver','Mat.Code','Volume(KL)','PGI Date','InvoiceNo.']]
         yv26_df['Mat.Code']=yv26_df['Mat.Code'].astype('str')
         Code2Description(yv26_df,'Mat.Code')
@@ -26,8 +28,8 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
         yv26_df['Rec. Code']=yv26_df['Rec. Code'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
     if True: # dryout block
         if sql:
-            godry_df=read_frame(godryModel.objects.all(),index_col='id')
-            outofstock_df=read_frame(outofstockModel.objects.all(),index_col='id')
+            godry_df=read_frame(godryModel.objects.all())
+            outofstock_df=read_frame(outofstockModel.objects.all())
             outofstock_df['STATUS CRITICAL'] = 'Out of Stock'
             dryout_df = pd.concat([godry_df, outofstock_df], ignore_index=True)
         dryout_df=dryout_df[['DO NAME','RO CODE','RO NAME','PRODUCT','STATUS CRITICAL','EXPECTED DRYOUT DATE/ TIME']] #'SUPPLY LOCATION','EXPECTED DRYOUT DATE/ TIME','TRANSIT TIME (HRS.)','STOCK SURVIVAL HOURS (HRS.)'
@@ -36,7 +38,7 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
         dryout_df['RO-PRODUCT'] = dryout_df['RO CODE'] + '-' + +dryout_df['PRODUCT'].astype('str')
     if True: # yv209d block
         if sql:
-            yv209d_df=read_frame(yv209dModel.objects.all(),index_col='id')
+            yv209d_df=read_frame(yv209dModel.objects.all())
         yv209d_df=yv209d_df[['Ship2Party','Name 1','RTD(in KM)','REMARKS','Sales Document','Material']]
         yv209d_df['Material']=yv209d_df['Material'].astype('str')
         Code2Description(yv209d_df,'Material')
@@ -44,7 +46,7 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
         yv209d_df['Ship2Party']=yv209d_df['Ship2Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
     if True: # yv208 block   
         if sql: 
-            yv208_df=read_frame(yv208Model.objects.all(),index_col='id')
+            yv208_df=read_frame(yv208Model.objects.all())
         yv208_df=yv208_df[['Material','Vehicle','Ship2Party','Name','Invoice']]
         yv208_df['Material']=yv208_df['Material'].astype('str')
         Code2Description(yv208_df,'Material')
@@ -52,7 +54,7 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
         yv208_df['Ship2Party']=yv208_df['Ship2Party'].astype('str')
     if True: # rolist block
         if sql:
-            rolist_df=read_frame(rolistModel.objects.all(),index_col='id')
+            rolist_df=read_frame(rolistModel.objects.all())
         rolist_df['Ship2Party']=rolist_df['Ship2Party'].map(lambda x:"0000"+str(x))
     df_yv209dpending=pd.merge(left=dryout_df,right=yv209d_df,how='inner',left_on=['RO CODE','PRODUCT'],right_on=['Ship2Party','Material'])
     df_yv208planned=pd.merge(left=dryout_df,right=yv208_df,how='inner',left_on=['RO CODE','PRODUCT'],right_on=['Ship2Party','Material'])
@@ -73,6 +75,7 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
     df_noindent=df_noindent[~boolen_yv26]
     print("List===",[df_yv209dpending,df_plan,df_invoiced,df_yesterdaysupplied,df_noindent])
     return [df_yv209dpending,df_plan,df_invoiced,df_yesterdaysupplied,df_noindent]
+
 def index(request):
     df_out_of_stock = pd.DataFrame()
     df_about_to_dry = pd.DataFrame()
@@ -92,6 +95,23 @@ def index(request):
         print(request.POST)
         if "GET" == request.method:
             return render(request, 'index.html')
+        elif request.method=='POST' and 'testing' in request.FILES:
+            excel_file1 = request.FILES.getlist('testing')
+            df=pd.read_excel(excel_file1[0])
+            user = settings.DATABASES['default']['USER']
+            password = settings.DATABASES['default']['PASSWORD']
+            database_name = settings.DATABASES['default']['NAME']
+            database_url = 'mysql+pymysql://{user}:{password}@localhost:3306/{database_name}'.format(
+                user=user,
+                password=password,
+                database_name=database_name,
+            )
+            engine = sqlalchemy.create_engine(database_url) #, echo=False
+            print(empModel._meta.db_table)
+            df.to_sql(empModel._meta.db_table, con=engine,index=False,if_exists='append')
+
+            # engine = create_engine(database_url, echo=False)
+            # df.to_sql(model._meta.db_table, con=engine)
         elif request.method=='POST' and 'dryout' in request.FILES:
             # Here it is already not empty, and you can attach
             excel_file1 = request.FILES.getlist('dryout')
@@ -162,10 +182,10 @@ def index(request):
                                     df[Columns[j][15]][i],df[Columns[j][16]][i],df[Columns[j][17]][i],df[Columns[j][18]][i])
                                     value.save()
             if False: # read data from mySQL database to pandas dataframe
-                df=read_frame(yv208Model.objects.all(),index_col='id')
+                df=read_frame(yv208Model.objects.all())
             # return render(request, 'index.html')   
             for x in df_list:                               
-                if {'SO NAME', 'DO NAME', 'SALES AREA', 'RO CODE', 'RO NAME', 'PRODUCT',
+                if { 'DO NAME', 'RO CODE', 'RO NAME', 'PRODUCT',
                     'TOTAL HOURS STOCK OUT'}.issubset(
                         x.columns):
                     df_out_of_stock = x.copy()
@@ -179,7 +199,7 @@ def index(request):
                     df_out_of_stock = df_out_of_stock[
                         ['SO NAME', 'DO NAME', 'SALES AREA', 'RO CODE', 'RO NAME', 'PRODUCT', 'STATUS CRITICAL',
                             'RO-PRODUCT','EXPECTED DRYOUT DATE/ TIME']]
-                elif {'SO NAME', 'DO NAME', 'SALES AREA', 'RO CODE', 'RO NAME', 'PRODUCT', 'EXPECTED DRYOUT DATE/ TIME',
+                elif {'DO NAME', 'RO CODE', 'RO NAME', 'PRODUCT', 'EXPECTED DRYOUT DATE/ TIME',
                         'STATUS CRITICAL'}.issubset(x.columns):
                     df_about_to_dry = x.copy()
                     df_about_to_dry['RO CODE'] = df_about_to_dry['RO CODE'].map(str)
@@ -190,21 +210,21 @@ def index(request):
                     df_about_to_dry = df_about_to_dry[
                         ['SO NAME', 'DO NAME', 'SALES AREA', 'RO CODE', 'RO NAME', 'PRODUCT', 'STATUS CRITICAL',
                             'RO-PRODUCT','EXPECTED DRYOUT DATE/ TIME']]
-                elif {'Ship2Party', 'Sales Document', 'REMARKS', 'Name 1'}.issubset(x.columns):
+                elif {'Ship2Party', 'Sales Document', 'REMARKS', 'Name 1','RTD(in KM)','Material'}.issubset(x.columns):
                     df=x.copy()
                     df['Ship2Party']=df['Ship2Party'].astype('str')
                     df['Ship2Party']=df['Ship2Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
                     df_yv209d = df.copy()
-                elif {'Ship2Party', 'Shipment', 'Shp.Status', 'Vehicle'}.issubset(x.columns):
+                elif {'Ship2Party', 'Shipment', 'Vehicle','Name','Material'}.issubset(x.columns):
                     df=x.copy()
                     df['Ship2Party']=df['Ship2Party'].astype('str')
                     df['Ship2Party']=df['Ship2Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
                     df_yv208 = df.copy()
-                elif {'Rec. Code', 'Receiver', 'Document', 'InvoiceNo.'}.issubset(x.columns):
+                elif {'Rec. Code', 'Receiver', 'PGI Date', 'InvoiceNo.','Mat.Code','Volume(KL)'}.issubset(x.columns):
                     df_yv26 = x.copy()
                 elif {'Ship2Party', 'Name', 'SOff.','Rg'}.issubset(x.columns):
                     df_ROlist = x.copy()
-                elif {'Mobile Number', 'Ship-To Party', 'Sales Office','Mobile Type','Distribution Channel'}.issubset(x.columns):
+                elif {'Mobile Number', 'Ship-To Party', 'Sales Office','Mobile Type','Distribution Channel','Name 1'}.issubset(x.columns):
                     df=x.copy()
                     df['Ship-To Party']=df['Ship-To Party'].astype('str')
                     df['Ship-To Party']=df['Ship-To Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
@@ -280,13 +300,13 @@ def index(request):
                 left=['RO CODE','RO CODE','RO CODE','RO CODE','RO CODE','Ship2Party','Ship2Party']
                 sms_tables=["YV209D-dryout",'No indent','YV209D']
                 selected_list = request.POST.get('select')
-                df_nodry.append(read_frame(yv209dModel.objects.all(),index_col='id'))
+                df_nodry.append(read_frame(yv209dModel.objects.all()))
                 df_nodry[-1]['Ship2Party']=df_nodry[-1]['Ship2Party'].astype('str')
                 df_nodry[-1]['Ship2Party']=df_nodry[-1]['Ship2Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
-                df_nodry.append(read_frame(yv208Model.objects.all(),index_col='id'))
+                df_nodry.append(read_frame(yv208Model.objects.all()))
                 df_nodry[-1]['Ship2Party']=df_nodry[-1]['Ship2Party'].astype('str')
                 df_nodry[-1]['Ship2Party']=df_nodry[-1]['Ship2Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
-                df_Phone=read_frame(romobileModel.objects.all(),index_col='id')
+                df_Phone=read_frame(romobileModel.objects.all())
                 df_Phone['Ship-To Party']=df_Phone['Ship-To Party'].astype('str')
                 df_Phone['Ship-To Party']=df_Phone['Ship-To Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
                 print(select)
@@ -340,7 +360,7 @@ def Muni(request):
             data = {'code': 'Success'}
             js_data = json.dumps(data)
         return JsonResponse(data)
-def Upload(request):
+def Upload(request):    
     df_list=[]
     if request.user.is_superuser: #True:
         print("super user")
@@ -358,10 +378,22 @@ def Upload(request):
                     sheets=pd.read_excel(i,sheet_name=None)
                     df = pd.concat(sheets[frame] for frame in sheets.keys())
                 df_list.append(df)
+            if True: # upload excel file to mySQL database.efficent method
+                user = settings.DATABASES['default']['USER']
+                password = settings.DATABASES['default']['PASSWORD']
+                database_name = settings.DATABASES['default']['NAME']
+                database_url = 'mysql+pymysql://{user}:{password}@localhost:3306/{database_name}'.format(user=user,password=password,database_name=database_name)
+                engine = sqlalchemy.create_engine(database_url) #, echo=False
+                for df in df_list:
+                    df['id']=df.index
+                    for j,column in enumerate(Columns):  
+                        if set(column).issubset(df.columns):
+                            Models[j].objects.all().delete() # delete selected SQL table values
+                            df.to_sql(Models[j]._meta.db_table, con=engine,index=False,if_exists='replace') #replace, fail,append ,index=False
             if False: # delete all SQL table values
                 for Model in Models:
                     Model.objects.all().delete()
-            if True: # upload excel file to mySQL database.
+            if False: # upload excel file to mySQL database. Deprected- inefficent method
                 for df in df_list:
                     for column in Columns:  
                         if set(column).issubset(df.columns):
@@ -423,7 +455,7 @@ def Upload(request):
                                     df[Columns[j][15]][i],df[Columns[j][16]][i],df[Columns[j][17]][i],df[Columns[j][18]][i])
                                     value.save()
             if False: # read data from mySQL database to pandas dataframe
-                df=read_frame(yv208Model.objects.all(),index_col='id')
+                df=read_frame(yv208Model.objects.all())
             arg={"success":"Data uploaded susuccessfully..."}           
             return render(request,'upload.html',arg)
 def login(request):
