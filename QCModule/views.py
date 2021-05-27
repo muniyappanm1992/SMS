@@ -13,7 +13,7 @@ import requests
 from datetime import datetime
 
 def index(request):
-    pass
+    return render(request,'QCModule/qc.html')
 
 
 def Upload(request):
