@@ -106,6 +106,8 @@ def index(request):
     if request.user.is_authenticated: #True:
         print("is_authenticated",request.user.is_authenticated)
         now=datetime.now()
+        from django.utils import timezone
+        now = timezone.localtime(timezone.now())  
         current_date=now.strftime("%d-%m-%Y")
         current_time=now.strftime("%H%M")
         print(request.POST)
