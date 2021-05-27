@@ -1,0 +1,39 @@
+{% extends 'QCModule/base.html' %}
+{% block content %}
+<div class="arrange">
+        <h1>File Upload to Database</h1>
+        <br>
+        <h3>Input files as follows:</h3>
+
+<ol>
+    <li>About to go Dry file</li>
+    <li>Out of Stock file</li>
+    <li>YV209D SAP downloaded file</li>
+    <li>YV208 SAP downloaded file</li>
+    <li>YV26 Previous day SAP downloaded file</li>
+    <li>MCSI RO list SAP downloaded file</li>
+    <li>Mobile Number of RO from SAP Tcode YVSMS</li>
+</ol>
+<br>
+<div>
+    <form class= "my_form" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" title="Upload 1st excel" name="qcfile" style="border: 1px solid black; padding: 5px;  border-radius: 5px;"
+               required="required" multiple>
+        <!-- <select id="dryout" name="select" style="border: 1px solid black; padding: 8px;  border-radius: 5px;">
+                <option value="YV209D">YV209D</option>
+                <option value="YV208">YV208</option>
+                <option value="YV209D-dryout">YV209D-dryout</option>
+                <option value="Planned">Planned</option>
+                <option value="Invoiced">Invoiced</option>
+                <option value="Yesterday Supplied">Yesterday Supplied</option>
+                <option value="No indent">No indent</option>
+        </select> -->
+        <input type="submit" value="Upload" style="border: 1px solid green; padding:8px; border-radius: 5px; cursor:
+        pointer;">
+    </form>
+</div>
+</div>
+<br>
+<h1>{{success}}</h1>
+{% endblock %}

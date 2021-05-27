@@ -9,12 +9,12 @@ import json
 from django.http import JsonResponse
 import requests
 from datetime import datetime
+from django.conf import settings
+import sqlalchemy
 from .models import Models,godryModel,outofstockModel,romobileModel,rolistModel,yv26Model,yv208Model,yv209dModel
 from django_pandas.io import read_frame
 from .column import Columns,godryColumn,outofstockColumn,romobileColumn,rolistColumn,yv26Column,yv208Column,yv209dColumn,HTMLColumn,MaterialCode,MaterianDescription,\
 sheet_names,select,website
-from django.conf import settings
-import sqlalchemy
 def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFrame(),yv26_df=pd.DataFrame(),rolist_df=pd.DataFrame(),sql=True):
     user = settings.DATABASES['default']['USER']
     password = settings.DATABASES['default']['PASSWORD']
@@ -112,22 +112,7 @@ def index(request):
         current_time=now.strftime("%H%M")
         print(request.POST)
         if "GET" == request.method:
-            return render(request, 'index.html')
-        elif request.method=='POST' and 'testing' in request.FILES:
-            excel_file1 = request.FILES.getlist('testing')
-            df=pd.read_excel(excel_file1[0])
-            user = settings.DATABASES['default']['USER']
-            password = settings.DATABASES['default']['PASSWORD']
-            database_name = settings.DATABASES['default']['NAME']
-            database_url = 'mysql+pymysql://{user}:{password}@localhost:3306/{database_name}'.format(
-                user=user,
-                password=password,
-                database_name=database_name,
-            )
-            engine = sqlalchemy.create_engine(database_url) #, echo=False
-            print(empModel._meta.db_table)
-            df.to_sql(empModel._meta.db_table, con=engine,index=False,if_exists='append')
-
+            return render(request, 'Operations/index.html')
             # engine = create_engine(database_url, echo=False)
             # df.to_sql(model._meta.db_table, con=engine)
         elif request.method=='POST' and 'dryout' in request.FILES:
@@ -201,7 +186,7 @@ def index(request):
                                     value.save()
             if False: # read data from mySQL database to pandas dataframe
                 df=read_frame(yv208Model.objects.all())
-            # return render(request, 'index.html')   
+            # return render(request, 'Operations/index.html')
             for x in df_list:                               
                 if { 'DO NAME', 'RO CODE', 'RO NAME', 'PRODUCT',
                     'TOTAL HOURS STOCK OUT'}.issubset(
@@ -272,7 +257,7 @@ def index(request):
                     response = HttpResponse(b.getvalue(), content_type='application/vnd.ms-excel')
                     response['Content-Disposition'] = 'attachment; filename="dryout status at {0} hrs on {1}.xlsx"'.format(current_time,current_date)
                     return response
-                    # return render(request, 'index.html')
+                    # return render(request, 'Operations/index.html')
             elif 'select' in request.POST: # table web view
                 global select
                 df_DryoutExport.append(df_yv209d)
@@ -285,9 +270,9 @@ def index(request):
                 if set([selected_list]).issubset(set(sms_tables)):
                     df['SMS']="SMS"
                 arg={"header":df.columns,"data":df.values.tolist(),"select":selected_list}
-                return render(request, 'dryout.html',arg)
+                return render(request, 'Operations/qc.html',arg)
             else:
-                return render(request, 'index.html')
+                return render(request, 'Operations/index.html')
         elif request.method=='POST' and 'dryout' not in request.FILES:
             df_nodry=Dryout().copy()
             if 'export' in request.POST: # export dryout list in excel and download in local machine
@@ -313,7 +298,7 @@ def index(request):
                     response = HttpResponse(b.getvalue(), content_type='application/vnd.ms-excel')
                     response['Content-Disposition'] = 'attachment; filename="dryout status at {0} hrs on {1}.xlsx"'.format(current_time,current_date)
                     return response
-                    # return render(request, 'index.html')
+                    # return render(request, 'Operations/index.html')
             elif 'select' in request.POST: # table web view
                 left=['RO CODE','RO CODE','RO CODE','RO CODE','RO CODE','Ship2Party','Ship2Party']
                 sms_tables=["YV209D-dryout",'No indent','YV209D']
@@ -339,10 +324,11 @@ def index(request):
                 if set([selected_list]).issubset(set(sms_tables)):
                     df['SMS']="SMS"
                 arg={"header":df.columns,"data":df.values.tolist(),"select":selected_list}
-                return render(request, 'dryout.html',arg)
+                return render(request, 'Operations/qc.html',arg)
     else:
         messages.info(request, 'Please login first..')
         return redirect("/")
+
 def Muni(request):
     print(request.POST)
     if  'array[]' in request.POST:
@@ -388,7 +374,7 @@ def Upload(request):
     if request.user.is_superuser: #True:
         print("super user")
         if "GET" == request.method:
-            return render(request,'upload.html')
+            return render(request,'Operations/upload.html')
         elif request.method=='POST' and 'dryout' in request.FILES:
             # Here it is already not empty, and you can attach
             excel_file1 = request.FILES.getlist('dryout')
@@ -480,7 +466,7 @@ def Upload(request):
             if False: # read data from mySQL database to pandas dataframe
                 df=read_frame(yv208Model.objects.all())
             arg={"success":"Data uploaded susuccessfully..."}           
-            return render(request,'upload.html',arg)
+            return render(request,'Operations/upload.html',arg)
 def login(request):
     if request.method=='POST':
         username=request.POST['username']
@@ -489,12 +475,12 @@ def login(request):
         print("user=",user)
         if user is not None:
             auth.login(request,user)
-            return redirect("/index")
+            return redirect("/dryout/index")
         else:
             messages.info(request,'invalid credentials')
-            return render(request,'login.html')
+            return render(request,'Operations/login.html')
     else:
-        return render(request,'login.html')
+        return render(request,'Operations/login.html')
 def logout(request):
     auth.logout(request)
-    return redirect("/")
+    return redirect("/dryout")

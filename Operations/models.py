@@ -3,6 +3,7 @@ from .column import godryColumn,outofstockColumn,romobileColumn,rolistColumn,yv2
 class godryModel(models.Model):
     class Meta:
             db_table = 'godry' # This tells Django where the SQL table is
+    id=models.AutoField(primary_key=True)
     godryColumn0=models.CharField(max_length=100,name=godryColumn[0],null=True)
     godryColumn1=models.CharField(max_length=100,name=godryColumn[1],null=False)
     godryColumn2=models.CharField(max_length=100,name=godryColumn[2],null=True)
@@ -26,6 +27,7 @@ class godryModel(models.Model):
 class outofstockModel(models.Model):
     class Meta:
             db_table = 'outofstock' # This tells Django where the SQL table is
+    id = models.AutoField(primary_key=True)
     outofstockColumn0=models.CharField(max_length=100,name=outofstockColumn[0],null=True)
     outofstockColumn1=models.CharField(max_length=100,name=outofstockColumn[1],null=False)
     outofstockColumn2=models.CharField(max_length=100,name=outofstockColumn[2],null=True)
@@ -43,6 +45,7 @@ class outofstockModel(models.Model):
 class romobileModel(models.Model): 
     class Meta:
             db_table = 'romobile' # This tells Django where the SQL table is
+    id = models.AutoField(primary_key=True)
     romobileColumn0=models.CharField(max_length=100,name=romobileColumn[0],null=False)
     romobileColumn1=models.CharField(max_length=100,name=romobileColumn[1],null=False)
     romobileColumn2=models.CharField(max_length=100,name=romobileColumn[2],null=False)
@@ -59,13 +62,15 @@ class romobileModel(models.Model):
 class rolistModel(models.Model): 
     class Meta:
             db_table = 'rolist' # This tells Django where the SQL table is
+    id = models.AutoField(primary_key=True)
     rolistColumn0=models.CharField(max_length=100,name=rolistColumn[0],null=False)
     rolistColumn1=models.CharField(max_length=100,name=rolistColumn[1],null=True)
     rolistColumn2=models.CharField(max_length=100,name=rolistColumn[2],null=True)
     rolistColumn3=models.CharField(max_length=100,name=rolistColumn[3],null=True)
 class yv26Model(models.Model): 
     class Meta:
-            db_table = 'yv26' # This tells Django where the SQL table is  
+            db_table = 'yv26' # This tells Django where the SQL table is
+    id = models.AutoField(primary_key=True)
     yv26Column0=models.CharField(max_length=100,name=yv26Column[0],null=False)
     yv26Column1=models.CharField(max_length=100,name=yv26Column[1],null=False)
     yv26Column2=models.CharField(max_length=100,name=yv26Column[2],null=True)
@@ -90,6 +95,7 @@ class yv26Model(models.Model):
 class yv208Model(models.Model):
     class Meta:
             db_table = 'yv208' # This tells Django where the SQL table is
+    id=models.AutoField(primary_key=True)
     yv208Column0=models.CharField(max_length=100,name=yv208Column[0],null=True)
     yv208Column1=models.CharField(max_length=100,name=yv208Column[1],null=False)
     yv208Column2=models.CharField(max_length=100,name=yv208Column[2],null=True)
@@ -106,6 +112,7 @@ class yv208Model(models.Model):
 class yv209dModel(models.Model):  
     class Meta:
             db_table = 'yv209d' # This tells Django where the SQL table is
+    id=models.AutoField(primary_key=True)
     yv209dColumn0=models.CharField(max_length=100,name=yv209dColumn[0],null=True)
     yv209dColumn1=models.CharField(max_length=100,name=yv209dColumn[1],null=True)
     yv209dColumn2=models.CharField(max_length=100,name=yv209dColumn[2],null=True)

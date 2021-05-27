@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('', include('Operations.urls', namespace="Operations")),
+    path('qc/', include('QCModule.urls', namespace="QCModule")),
+    path('dryout/', include('Operations.urls', namespace="Operations")),
     path('admin/', admin.site.urls),
 ]
