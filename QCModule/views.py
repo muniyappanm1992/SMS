@@ -11,13 +11,18 @@ import json
 from django.http import JsonResponse
 import requests
 from datetime import datetime
+df=pd.DataFrame()
 
 def index(request):
-    return render(request,'QCModule/index.html')
+    global df
+    arg = {"header": df.columns, "data": df.values.tolist(), "select": "YVROKAR"}
+    # return render(request, 'Operations/dryout.html', arg)
+    return render(request,'QCModule/qc.html', arg)
 
 
 def Upload(request):
     df_list=[]
+    global df
     if request.user.is_superuser: #True:
         print("super user")
         if "GET" == request.method:
@@ -37,7 +42,8 @@ def Upload(request):
             df = pd.read_excel(excel_file1[0])
             boolean = df['Tank'].isna()
             df = df[~boolean]
-            df["QtyDiff"] = df["Physical Balance"] - df["Quantity"]
+            df["QtyDiff"] =df["Physical Balance"] - df["Quantity"]
+            df["QtyDiff"]=df["QtyDiff"].map(lambda x:round(x,2))
             df["Status"] = df["QtyDiff"].map(lambda x: "Dormant" if abs(x) < 10 else ("Receipt" if x > 10 else "Dispatch"))
             print(df)
             if False: # upload excel file to mySQL database.efficent method
@@ -52,7 +58,7 @@ def Upload(request):
                 #         if set(column).issubset(df.columns):
                 #             Models[j].objects.all().delete() # delete selected SQL table values
                 #             df.to_sql(Models[j]._meta.db_table, con=engine,index=False,if_exists='replace') #replace, fail,append ,index=False
-            arg={"success":"Data uploaded susuccessfully..."}
+            arg={"success":"Data uploaded successfully..."}
             return render(request,'QCModule/upload.html',arg)
 
 def login(request):
