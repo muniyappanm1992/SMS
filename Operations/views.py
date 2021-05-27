@@ -113,8 +113,6 @@ def index(request):
         print(request.POST)
         if "GET" == request.method:
             return render(request, 'Operations/index.html')
-            # engine = create_engine(database_url, echo=False)
-            # df.to_sql(model._meta.db_table, con=engine)
         elif request.method=='POST' and 'dryout' in request.FILES:
             # Here it is already not empty, and you can attach
             excel_file1 = request.FILES.getlist('dryout')
@@ -127,65 +125,6 @@ def index(request):
                     sheets=pd.read_excel(i,sheet_name=None)
                     df = pd.concat(sheets[frame] for frame in sheets.keys())
                 df_list.append(df)
-            if False: # delete all SQL table values
-                for Model in Models:
-                    Model.objects.all().delete()
-            if False: # upload excel file to mySQL database.
-                for df in df_list:
-                    for column in Columns:  
-                        if set(column).issubset(df.columns):
-                            if Columns.index(column)==0:
-                                j=Columns.index(column);
-                                for i,data in enumerate(df.values.tolist()):
-                                    value=Models[j](i+1,df[Columns[j][0]][i],df[Columns[j][1]][i],df[Columns[j][2]][i],df[Columns[j][3]][i],\
-                                    df[Columns[j][4]][i],df[Columns[j][5]][i],df[Columns[j][6]][i],df[Columns[j][7]][i],df[Columns[j][8]][i],\
-                                    df[Columns[j][9]][i],df[Columns[j][10]][i],df[Columns[j][11]][i],df[Columns[j][12]][i],df[Columns[j][13]][i],df[Columns[j][14]][i],\
-                                    df[Columns[j][15]][i],df[Columns[j][16]][i],df[Columns[j][17]][i],df[Columns[j][18]][i],df[Columns[j][19]][i])
-                                    value.save()
-                            elif Columns.index(column)==1:
-                                j=Columns.index(column);
-                                for i,data in enumerate(df.values.tolist()):
-                                    value=Models[j](i+1,df[Columns[j][0]][i],df[Columns[j][1]][i],df[Columns[j][2]][i],df[Columns[j][3]][i],\
-                                    df[Columns[j][4]][i],df[Columns[j][5]][i],df[Columns[j][6]][i],df[Columns[j][7]][i],df[Columns[j][8]][i],\
-                                    df[Columns[j][9]][i],df[Columns[j][10]][i],df[Columns[j][11]][i],df[Columns[j][12]][i],df[Columns[j][13]][i])
-                                    value.save()    
-                            elif Columns.index(column)==2:
-                                j=Columns.index(column);
-                                for i,data in enumerate(df.values.tolist()):
-                                    value=Models[j](i+1,df[Columns[j][0]][i],df[Columns[j][1]][i],df[Columns[j][2]][i],df[Columns[j][3]][i],\
-                                    df[Columns[j][4]][i],df[Columns[j][5]][i],df[Columns[j][6]][i],df[Columns[j][7]][i],df[Columns[j][8]][i],\
-                                    df[Columns[j][9]][i],df[Columns[j][10]][i],df[Columns[j][11]][i],df[Columns[j][12]][i])
-                                    value.save()
-                            elif Columns.index(column)==3:
-                                j=Columns.index(column);
-                                for i,data in enumerate(df.values.tolist()):
-                                    value=Models[j](i+1,df[Columns[j][0]][i],df[Columns[j][1]][i],df[Columns[j][2]][i],df[Columns[j][3]][i])
-                                    value.save()
-                            elif Columns.index(column)==4:
-                                j=Columns.index(column);
-                                for i,data in enumerate(df.values.tolist()):
-                                    value=Models[j](i+1,df[Columns[j][0]][i],df[Columns[j][1]][i],df[Columns[j][2]][i],df[Columns[j][3]][i],\
-                                    df[Columns[j][4]][i],df[Columns[j][5]][i],df[Columns[j][6]][i],df[Columns[j][7]][i],df[Columns[j][8]][i],\
-                                    df[Columns[j][9]][i],df[Columns[j][10]][i],df[Columns[j][11]][i],df[Columns[j][12]][i],df[Columns[j][13]][i],df[Columns[j][14]][i],\
-                                    df[Columns[j][15]][i],df[Columns[j][16]][i],df[Columns[j][17]][i],df[Columns[j][18]][i],df[Columns[j][19]][i],df[Columns[j][20]][i])
-                                    value.save()  
-                            elif Columns.index(column)==5:
-                                j=Columns.index(column);
-                                for i,data in enumerate(df.values.tolist()):
-                                    value=Models[j](i+1,df[Columns[j][0]][i],df[Columns[j][1]][i],df[Columns[j][2]][i],df[Columns[j][3]][i],\
-                                    df[Columns[j][4]][i],df[Columns[j][5]][i],df[Columns[j][6]][i],df[Columns[j][7]][i],df[Columns[j][8]][i],\
-                                    df[Columns[j][9]][i],df[Columns[j][10]][i],df[Columns[j][11]][i],df[Columns[j][12]][i])
-                                    value.save()
-                            elif Columns.index(column)==6:
-                                j=Columns.index(column);
-                                for i,data in enumerate(df.values.tolist()):
-                                    value=Models[j](i+1,df[Columns[j][0]][i],df[Columns[j][1]][i],df[Columns[j][2]][i],df[Columns[j][3]][i],\
-                                    df[Columns[j][4]][i],df[Columns[j][5]][i],df[Columns[j][6]][i],df[Columns[j][7]][i],df[Columns[j][8]][i],\
-                                    df[Columns[j][9]][i],df[Columns[j][10]][i],df[Columns[j][11]][i],df[Columns[j][12]][i],df[Columns[j][13]][i],df[Columns[j][14]][i],\
-                                    df[Columns[j][15]][i],df[Columns[j][16]][i],df[Columns[j][17]][i],df[Columns[j][18]][i])
-                                    value.save()
-            if False: # read data from mySQL database to pandas dataframe
-                df=read_frame(yv208Model.objects.all())
             # return render(request, 'Operations/index.html')
             for x in df_list:                               
                 if { 'DO NAME', 'RO CODE', 'RO NAME', 'PRODUCT',
@@ -270,7 +209,7 @@ def index(request):
                 if set([selected_list]).issubset(set(sms_tables)):
                     df['SMS']="SMS"
                 arg={"header":df.columns,"data":df.values.tolist(),"select":selected_list}
-                return render(request, 'Operations/qc.html',arg)
+                return render(request, 'Operations/dryout.html',arg)
             else:
                 return render(request, 'Operations/index.html')
         elif request.method=='POST' and 'dryout' not in request.FILES:
@@ -324,7 +263,7 @@ def index(request):
                 if set([selected_list]).issubset(set(sms_tables)):
                     df['SMS']="SMS"
                 arg={"header":df.columns,"data":df.values.tolist(),"select":selected_list}
-                return render(request, 'Operations/qc.html',arg)
+                return render(request, 'Operations/dryout.html',arg)
     else:
         messages.info(request, 'Please login first..')
         return redirect("/")
@@ -399,72 +338,6 @@ def Upload(request):
                         if set(column).issubset(df.columns):
                             Models[j].objects.all().delete() # delete selected SQL table values
                             df.to_sql(Models[j]._meta.db_table, con=engine,index=False,if_exists='replace') #replace, fail,append ,index=False
-            if False: # delete all SQL table values
-                for Model in Models:
-                    Model.objects.all().delete()
-            if False: # upload excel file to mySQL database. Deprected- inefficent method
-                for df in df_list:
-                    for column in Columns:  
-                        if set(column).issubset(df.columns):
-                            if Columns.index(column)==0:
-                                j=Columns.index(column);
-                                Models[j].objects.all().delete() # delete selected SQL table values
-                                for i,data in enumerate(df.values.tolist()):
-                                    value=Models[j](i+1,df[Columns[j][0]][i],df[Columns[j][1]][i],df[Columns[j][2]][i],df[Columns[j][3]][i],\
-                                    df[Columns[j][4]][i],df[Columns[j][5]][i],df[Columns[j][6]][i],df[Columns[j][7]][i],df[Columns[j][8]][i],\
-                                    df[Columns[j][9]][i],df[Columns[j][10]][i],df[Columns[j][11]][i],df[Columns[j][12]][i],df[Columns[j][13]][i],df[Columns[j][14]][i],\
-                                    df[Columns[j][15]][i],df[Columns[j][16]][i],df[Columns[j][17]][i],df[Columns[j][18]][i],df[Columns[j][19]][i])
-                                    value.save()
-                            elif Columns.index(column)==1:
-                                j=Columns.index(column);
-                                Models[j].objects.all().delete() # delete selected SQL table values
-                                for i,data in enumerate(df.values.tolist()):
-                                    value=Models[j](i+1,df[Columns[j][0]][i],df[Columns[j][1]][i],df[Columns[j][2]][i],df[Columns[j][3]][i],\
-                                    df[Columns[j][4]][i],df[Columns[j][5]][i],df[Columns[j][6]][i],df[Columns[j][7]][i],df[Columns[j][8]][i],\
-                                    df[Columns[j][9]][i],df[Columns[j][10]][i],df[Columns[j][11]][i],df[Columns[j][12]][i],df[Columns[j][13]][i])
-                                    value.save()    
-                            elif Columns.index(column)==2:
-                                j=Columns.index(column);
-                                Models[j].objects.all().delete() # delete selected SQL table values
-                                for i,data in enumerate(df.values.tolist()):
-                                    value=Models[j](i+1,df[Columns[j][0]][i],df[Columns[j][1]][i],df[Columns[j][2]][i],df[Columns[j][3]][i],\
-                                    df[Columns[j][4]][i],df[Columns[j][5]][i],df[Columns[j][6]][i],df[Columns[j][7]][i],df[Columns[j][8]][i],\
-                                    df[Columns[j][9]][i],df[Columns[j][10]][i],df[Columns[j][11]][i],df[Columns[j][12]][i])
-                                    value.save()
-                            elif Columns.index(column)==3:
-                                j=Columns.index(column);
-                                Models[j].objects.all().delete() # delete selected SQL table values
-                                for i,data in enumerate(df.values.tolist()):
-                                    value=Models[j](i+1,df[Columns[j][0]][i],df[Columns[j][1]][i],df[Columns[j][2]][i],df[Columns[j][3]][i])
-                                    value.save()
-                            elif Columns.index(column)==4:
-                                j=Columns.index(column);
-                                Models[j].objects.all().delete() # delete selected SQL table values
-                                for i,data in enumerate(df.values.tolist()):
-                                    value=Models[j](i+1,df[Columns[j][0]][i],df[Columns[j][1]][i],df[Columns[j][2]][i],df[Columns[j][3]][i],\
-                                    df[Columns[j][4]][i],df[Columns[j][5]][i],df[Columns[j][6]][i],df[Columns[j][7]][i],df[Columns[j][8]][i],\
-                                    df[Columns[j][9]][i],df[Columns[j][10]][i],df[Columns[j][11]][i],df[Columns[j][12]][i],df[Columns[j][13]][i],df[Columns[j][14]][i],\
-                                    df[Columns[j][15]][i],df[Columns[j][16]][i],df[Columns[j][17]][i],df[Columns[j][18]][i],df[Columns[j][19]][i],df[Columns[j][20]][i])
-                                    value.save()  
-                            elif Columns.index(column)==5:
-                                j=Columns.index(column);
-                                Models[j].objects.all().delete() # delete selected SQL table values
-                                for i,data in enumerate(df.values.tolist()):
-                                    value=Models[j](i+1,df[Columns[j][0]][i],df[Columns[j][1]][i],df[Columns[j][2]][i],df[Columns[j][3]][i],\
-                                    df[Columns[j][4]][i],df[Columns[j][5]][i],df[Columns[j][6]][i],df[Columns[j][7]][i],df[Columns[j][8]][i],\
-                                    df[Columns[j][9]][i],df[Columns[j][10]][i],df[Columns[j][11]][i],df[Columns[j][12]][i])
-                                    value.save()
-                            elif Columns.index(column)==6:
-                                j=Columns.index(column);
-                                Models[j].objects.all().delete() # delete selected SQL table values
-                                for i,data in enumerate(df.values.tolist()):
-                                    value=Models[j](i+1,df[Columns[j][0]][i],df[Columns[j][1]][i],df[Columns[j][2]][i],df[Columns[j][3]][i],\
-                                    df[Columns[j][4]][i],df[Columns[j][5]][i],df[Columns[j][6]][i],df[Columns[j][7]][i],df[Columns[j][8]][i],\
-                                    df[Columns[j][9]][i],df[Columns[j][10]][i],df[Columns[j][11]][i],df[Columns[j][12]][i],df[Columns[j][13]][i],df[Columns[j][14]][i],\
-                                    df[Columns[j][15]][i],df[Columns[j][16]][i],df[Columns[j][17]][i],df[Columns[j][18]][i])
-                                    value.save()
-            if False: # read data from mySQL database to pandas dataframe
-                df=read_frame(yv208Model.objects.all())
             arg={"success":"Data uploaded susuccessfully..."}           
             return render(request,'Operations/upload.html',arg)
 def login(request):

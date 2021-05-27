@@ -13,7 +13,7 @@ import requests
 from datetime import datetime
 
 def index(request):
-    return render(request,'QCModule/qc.html')
+    return render(request,'QCModule/index.html')
 
 
 def Upload(request):
@@ -25,16 +25,21 @@ def Upload(request):
         elif request.method=='POST' and 'qcfile' in request.FILES:
             # Here it is already not empty, and you can attach
             excel_file1 = request.FILES.getlist('qcfile')
-            for i in excel_file1: # uploaded ecel file to pandas dataframe
-                print(i)
-                df = pd.DataFrame()
-                if str(i).lower().endswith('.csv'):
-                    df = pd.read_csv(i, index_col=False)
-                elif str(i).lower().endswith(('.xls', '.xlsx')):
-                    sheets=pd.read_excel(i,sheet_name=None)
-                    df = pd.concat(sheets[frame] for frame in sheets.keys())
-                df_list.append(df)
-                print(df_list)
+            # for i in excel_file1: # uploaded ecel file to pandas dataframe
+            #     print(i)
+            #     df = pd.DataFrame()
+            #     if str(i).lower().endswith('.csv'):
+            #         df = pd.read_csv(i, index_col=False)
+            #     elif str(i).lower().endswith(('.xls', '.xlsx')):
+            #         sheets=pd.read_excel(i,sheet_name=None)
+            #         df = pd.concat(sheets[frame] for frame in sheets.keys())
+            #     df_list.append(df)
+            df = pd.read_excel(excel_file1[0])
+            boolean = df['Tank'].isna()
+            df = df[~boolean]
+            df["QtyDiff"] = df["Physical Balance"] - df["Quantity"]
+            df["Status"] = df["QtyDiff"].map(lambda x: "Dormant" if abs(x) < 10 else ("Receipt" if x > 10 else "Dispatch"))
+            print(df)
             if False: # upload excel file to mySQL database.efficent method
                 user = settings.DATABASES['default']['USER']
                 password = settings.DATABASES['default']['PASSWORD']
