@@ -125,7 +125,7 @@ def index(request):
                     sheets=pd.read_excel(i,sheet_name=None)
                     df = pd.concat(sheets[frame] for frame in sheets.keys())
                 df_list.append(df)
-            # return render(request, 'Operations/index.html')
+            # return render(request, 'Operations/login.html')
             for x in df_list:                               
                 if { 'DO NAME', 'RO CODE', 'RO NAME', 'PRODUCT',
                     'TOTAL HOURS STOCK OUT'}.issubset(
@@ -196,7 +196,7 @@ def index(request):
                     response = HttpResponse(b.getvalue(), content_type='application/vnd.ms-excel')
                     response['Content-Disposition'] = 'attachment; filename="dryout status at {0} hrs on {1}.xlsx"'.format(current_time,current_date)
                     return response
-                    # return render(request, 'Operations/index.html')
+                    # return render(request, 'Operations/login.html')
             elif 'select' in request.POST: # table web view
                 global select
                 df_DryoutExport.append(df_yv209d)
@@ -211,7 +211,7 @@ def index(request):
                 arg={"header":df.columns,"data":df.values.tolist(),"select":selected_list}
                 return render(request, 'Operations/dryout.html',arg)
             else:
-                return render(request, 'Operations/index.html')
+                return render(request, 'Operations/login.html')
         elif request.method=='POST' and 'dryout' not in request.FILES:
             df_nodry=Dryout().copy()
             if 'export' in request.POST: # export dryout list in excel and download in local machine
@@ -237,7 +237,7 @@ def index(request):
                     response = HttpResponse(b.getvalue(), content_type='application/vnd.ms-excel')
                     response['Content-Disposition'] = 'attachment; filename="dryout status at {0} hrs on {1}.xlsx"'.format(current_time,current_date)
                     return response
-                    # return render(request, 'Operations/index.html')
+                    # return render(request, 'Operations/login.html')
             elif 'select' in request.POST: # table web view
                 left=['RO CODE','RO CODE','RO CODE','RO CODE','RO CODE','Ship2Party','Ship2Party']
                 sms_tables=["YV209D-dryout",'No indent','YV209D']
@@ -358,4 +358,4 @@ def login(request):
         return render(request,'Operations/login.html')
 def logout(request):
     auth.logout(request)
-    return redirect("/dryout")
+    return redirect("/")
