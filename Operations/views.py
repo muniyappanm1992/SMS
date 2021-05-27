@@ -266,7 +266,7 @@ def index(request):
                 return render(request, 'Operations/dryout.html',arg)
     else:
         messages.info(request, 'Please login first..')
-        return redirect("/")
+        return redirect("/dryout")
 
 def Muni(request):
     print(request.POST)
@@ -341,7 +341,9 @@ def Upload(request):
             arg={"success":"Data uploaded susuccessfully..."}           
             return render(request,'Operations/upload.html',arg)
 def login(request):
-    if request.method=='POST':
+    if request.user.is_authenticated:
+        return redirect("/dryout/index")
+    elif request.method=='POST':
         username=request.POST['username']
         password=request.POST['password']
         user=auth.authenticate(username=username,password=password)

@@ -15,6 +15,10 @@ df=pd.DataFrame()
 
 def index(request):
     global df
+    print(df.columns)
+    df=df[['Material','Tank', 'Tank Status', 'Opening Dip', 'Quantity', 'Receipt', 'Issue', 'Book Balance',
+       'Closing Dip', 'Physical Balance','Loss/Gain', 'Remarks', 'QtyDiff', 'Status']]
+    df['Material']=df['Material'].astype('int')
     arg = {"header": df.columns, "data": df.values.tolist(), "select": "YVROKAR"}
     # return render(request, 'Operations/dryout.html', arg)
     return render(request,'QCModule/qc.html', arg)
@@ -45,7 +49,6 @@ def Upload(request):
             df["QtyDiff"] =df["Physical Balance"] - df["Quantity"]
             df["QtyDiff"]=df["QtyDiff"].map(lambda x:round(x,2))
             df["Status"] = df["QtyDiff"].map(lambda x: "Dormant" if abs(x) < 10 else ("Receipt" if x > 10 else "Dispatch"))
-            print(df)
             if False: # upload excel file to mySQL database.efficent method
                 user = settings.DATABASES['default']['USER']
                 password = settings.DATABASES['default']['PASSWORD']
@@ -62,7 +65,9 @@ def Upload(request):
             return render(request,'QCModule/upload.html',arg)
 
 def login(request):
-    if request.method=='POST':
+    if request.user.is_authenticated:
+        return redirect("/qc/index")
+    elif request.method=='POST':
         username=request.POST['username']
         password=request.POST['password']
         user=auth.authenticate(username=username,password=password)
