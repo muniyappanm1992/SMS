@@ -68,8 +68,11 @@ def index(request):
             password = settings.DATABASES['default']['PASSWORD']
             database_name = settings.DATABASES['default']['NAME']
             host = settings.DATABASES['default']['HOST']
-            database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,password=password,host=host,database_name=database_name)
-            engine = sqlalchemy.create_engine(database_url)  # , echo=False
+            if(host=="127.0.0.1" or host=="localhost"):
+                database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,password=password,host=host,database_name=database_name)
+            else:
+                database_url='mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,password=password,host=host,database_name=database_name)
+            engine = sqlalchemy.create_engine(database_url) #, echo=False
             df_yvrokar=pd.read_sql('select * from {0}.{1}'.format(database_name, yvrokarModel._meta.db_table), con=engine)
             df_yqlab = pd.read_sql('select * from {0}.{1}'.format(database_name, yqlabModel._meta.db_table),con=engine)
             df = pd.merge(left=df_yvrokar, right=df_yqlab, how='inner',
@@ -125,7 +128,10 @@ def Upload(request):
                 password = settings.DATABASES['default']['PASSWORD']
                 database_name = settings.DATABASES['default']['NAME']
                 host = settings.DATABASES['default']['HOST']
-                database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,password=password,host=host,database_name=database_name)
+                if(host=="127.0.0.1" or host=="localhost"):
+                    database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,password=password,host=host,database_name=database_name)
+                else:
+                    database_url='mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,password=password,host=host,database_name=database_name)
                 engine = sqlalchemy.create_engine(database_url) #, echo=False
                 for df in df_category:
                     for j,column in enumerate(Columns):

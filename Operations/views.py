@@ -20,7 +20,14 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
     password = settings.DATABASES['default']['PASSWORD']
     database_name = settings.DATABASES['default']['NAME']
     host = settings.DATABASES['default']['HOST']
-    database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,password=password,host=host,database_name=database_name)
+    if(host=="127.0.0.1" or host=="localhost"):
+        database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,password=password,host=host,database_name=database_name)
+    else:
+        database_url='mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,password=password,host=host,database_name=database_name)
+    print("host=====",host)
+    print("user=====",user)
+    print("password=====",password)
+    print("database_name=====",database_name)
     engine = sqlalchemy.create_engine(database_url) #, echo=False
     def Code2Description(df,columnName,Material=MaterialCode,Description=MaterianDescription):
         df.replace({columnName: Material}, {columnName: Description}, regex=True,inplace=True)
@@ -254,7 +261,10 @@ def index(request):
                 password = settings.DATABASES['default']['PASSWORD']
                 database_name = settings.DATABASES['default']['NAME']
                 host = settings.DATABASES['default']['HOST']
-                database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,password=password,host=host,database_name=database_name)
+                if(host=="127.0.0.1" or host=="localhost"):
+                    database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,password=password,host=host,database_name=database_name)
+                else:
+                    database_url='mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,password=password,host=host,database_name=database_name)
                 engine = sqlalchemy.create_engine(database_url) #, echo=False
                 df_nodry.append(pd.read_sql('select * from {0}.{1}'.format(database_name,yv209dModel._meta.db_table), con=engine))
                 df_nodry[-1]['Ship2Party']=df_nodry[-1]['Ship2Party'].astype('str')
@@ -339,7 +349,10 @@ def Upload(request):
                 password = settings.DATABASES['default']['PASSWORD']
                 database_name = settings.DATABASES['default']['NAME']
                 host = settings.DATABASES['default']['HOST']
-                database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,password=password,host=host,database_name=database_name)
+                if(host=="127.0.0.1" or host=="localhost"):
+                    database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,password=password,host=host,database_name=database_name)
+                else:
+                    database_url='mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,password=password,host=host,database_name=database_name)
                 engine = sqlalchemy.create_engine(database_url) #, echo=False
                 for df in df_list:
                     # df['id']=df.index
