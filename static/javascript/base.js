@@ -52,7 +52,7 @@ $(document).ready(function() {
  
     var table = $('#myTable').DataTable( {
         orderCellsTop: true,
-        // // fixedHeader: true,
+        // fixedHeader: true,
         // "scrollX": true,
             scrollX: true
     } );

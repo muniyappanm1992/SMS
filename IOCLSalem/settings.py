@@ -95,7 +95,7 @@ if os.getenv('GAE_APPLICATION', None):
 else:
     # Running locally so connect to either a local MySQL instance or connect to
     # Cloud SQL via the proxy. To start the proxy via command line:
-    #
+    #   $ cloud_sql_proxy -instances=iocsankari:asia-south1:sankari-instance=tcp:3306
     #     $ cloud_sql_proxy -instances=[INSTANCE_CONNECTION_NAME]=tcp:3306
     #
     # See https://cloud.google.com/sql/docs/mysql-connect-proxy

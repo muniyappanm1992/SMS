@@ -2,39 +2,36 @@
 {% load static %}
 {% block content %}
     <br>
-    <div class="navbar">
-      <a href="#">Home</a>
-      <a href="/dryout">Dryout</a>
-      <a href="/qc">QC</a>
-    </div>
-<div>
-  <h1 class="title">Indian Oil Corporation Ltd, Sankari Terminal</h1>
-  <br>
-  <h3>The Energy Vision</h3>
-  <p>Welcome to the world of IndianOil, a diversified, integrated energy major with presence in almost all the streams of oil,
-     gas, petrochemicals and alternative energy sources; a world of high-calibre people, state-of-the-art technologies and 
-     cutting-edge R&D; a world of best practices, quality-consciousness and transparency; 
-    and a world where energy in all its forms is tapped most responsibly and delivered to the consumers most affordably.</p>
-    <p>Welcome to IndianOil, The Energy of India.</p>
-</div>
-  <div class="slideshow-container">
-    {% for imageno in imagenamelist %}
-    <div class="mySlides fade">
-      <div class="numbertext">{{imageno}} / {{imagenamelist| length}}</div>
-      <img src="/static/images/front/{{imageno}}.PNG" alt="main gate" style="width:100%">
-      <div class="text">{{caption}}</div>
-    </div>
-    {% endfor%}
-  
-    <!-- <a class="prev">&#10094;</a>
-    <a class="next">&#10095;</a> -->
-
-    </div>
     <br>
+  <div class="slideshow-container">
+    <a class="preimage">&#10094;</a>
+    <a class="nextimage">&#10095;</a>
     <div style="text-align:center">
       {% for imageno in imagenamelist %}
       <span class="dot">{{imageno}}</span> 
       {% endfor%}
     </div>
 
+    <br>
+    {% for imageno in imagenamelist %}
+    <div class="mySlides fade">
+      <div class="numbertext">{{imageno}} / {{imagenamelist| length}}</div>
+      <br>
+      <img src="/static/images/front/{{imageno}}.PNG" alt="main gate" style="width:100%;max-height:45rem;">
+      <div class="text">{{caption}}</div>
+    </div>
+    {% endfor%}
+  
+    <a class="prev">&#10094;</a>
+    <a class="next">&#10095;</a>
+
+    </div>
+    <div>
+      <h3>The Energy Vision</h3>
+      <p>Welcome to the world of IndianOil, a diversified, integrated energy major with presence in almost all the streams of oil,
+         gas, petrochemicals and alternative energy sources; a world of high-calibre people, state-of-the-art technologies and 
+         cutting-edge R&D; a world of best practices, quality-consciousness and transparency; 
+        and a world where energy in all its forms is tapped most responsibly and delivered to the consumers most affordably.</p>
+        <p>Welcome to IndianOil, The Energy of India.</p>
+    </div>
 {% endblock %}

@@ -44,6 +44,7 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
             q='select * from {0}.{1}'.format(database_name,outofstockModel._meta.db_table)
             outofstock_df=pd.read_sql(q, con=engine)
             outofstock_df.fillna("-",inplace=True)
+            outofstock_df['EXPECTED DRYOUT DATE/ TIME']="NA"
             # outofstock_df=read_frame(outofstockModel.objects.all())
             outofstock_df['STATUS CRITICAL'] = 'Out of Stock'
             dryout_df = pd.concat([godry_df, outofstock_df], ignore_index=True)
@@ -275,7 +276,6 @@ def index(request):
     else:
         messages.info(request, 'Please login first..')
         return redirect("/dryout")
-
 def Muni(request):
     print(request.POST)
     if  'array[]' in request.POST:
