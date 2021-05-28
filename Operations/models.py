@@ -22,7 +22,7 @@ class godryModel(models.Model):
     godryColumn15=models.CharField(max_length=100,name=godryColumn[15],null=True)
     godryColumn16=models.CharField(max_length=100,name=godryColumn[16],null=True)
     godryColumn17=models.CharField(max_length=100,name=godryColumn[17],null=True)
-    godryColumn18=models.CharField(max_length=100,name=godryColumn[18],null=False)
+    godryColumn18=models.DateTimeField(max_length=100,name=godryColumn[18],null=False)
     godryColumn19=models.CharField(max_length=100,name=godryColumn[19],null=False)
 class outofstockModel(models.Model):
     class Meta:
@@ -80,7 +80,7 @@ class yv26Model(models.Model):
     yv26Column6=models.CharField(max_length=100,name=yv26Column[6],null=True)
     yv26Column7=models.CharField(max_length=100,name=yv26Column[7],null=True)
     yv26Column8=models.CharField(max_length=100,name=yv26Column[8],null=True)
-    yv26Column9=models.CharField(max_length=100,name=yv26Column[9],null=False)
+    yv26Column9=models.DateTimeField(max_length=100,name=yv26Column[9],null=False)
     yv26Column10=models.CharField(max_length=100,name=yv26Column[10],null=True)
     yv26Column11=models.CharField(max_length=100,name=yv26Column[11],null=False)
     yv26Column12=models.CharField(max_length=100,name=yv26Column[12],null=True)

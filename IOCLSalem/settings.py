@@ -84,10 +84,10 @@ if os.getenv('GAE_APPLICATION', None):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'HOST': '/cloudsql/ioclsalem:asia-south1:ioclsalem-instance',
+            'HOST': '/cloudsql/iocsankari:asia-south1:sankari-instance',
             'USER': 'root',
             'PASSWORD': 'Mana$hema11',
-            'NAME': 'dryout',   
+            'NAME': 'sankari',   
         }
     }
 
@@ -104,7 +104,7 @@ else:
             'ENGINE': 'django.db.backends.mysql',
             'HOST': '127.0.0.1',
             'PORT': '3306',
-            'NAME': 'dryout',
+            'NAME': 'sankari',
             'USER': 'root',
             'PASSWORD': 'Mana$hema11',
         }

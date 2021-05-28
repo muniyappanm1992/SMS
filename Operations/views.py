@@ -19,7 +19,8 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
     user = settings.DATABASES['default']['USER']
     password = settings.DATABASES['default']['PASSWORD']
     database_name = settings.DATABASES['default']['NAME']
-    database_url = 'mysql+pymysql://{user}:{password}@localhost:3306/{database_name}'.format(user=user,password=password,database_name=database_name)
+    host = settings.DATABASES['default']['HOST']
+    database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,password=password,host=host,database_name=database_name)
     engine = sqlalchemy.create_engine(database_url) #, echo=False
     def Code2Description(df,columnName,Material=MaterialCode,Description=MaterianDescription):
         df.replace({columnName: Material}, {columnName: Description}, regex=True,inplace=True)
@@ -27,6 +28,7 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
         if sql:
             q='select * from {0}.{1}'.format(database_name,yv26Model._meta.db_table)
             yv26_df=pd.read_sql(q, con=engine)
+            yv26_df.fillna("-",inplace=True)
             # yv26_df=read_frame(yv26Model.objects.all())
         yv26_df=yv26_df[['Rec. Code','Receiver','Mat.Code','Volume(KL)','PGI Date','InvoiceNo.']]
         yv26_df['Mat.Code']=yv26_df['Mat.Code'].astype('str')
@@ -37,9 +39,11 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
         if sql:
             q='select * from {0}.{1}'.format(database_name,godryModel._meta.db_table)
             godry_df=pd.read_sql(q, con=engine)
+            godry_df.fillna("-",inplace=True)
             # godry_df=read_frame(godryModel.objects.all())
             q='select * from {0}.{1}'.format(database_name,outofstockModel._meta.db_table)
             outofstock_df=pd.read_sql(q, con=engine)
+            outofstock_df.fillna("-",inplace=True)
             # outofstock_df=read_frame(outofstockModel.objects.all())
             outofstock_df['STATUS CRITICAL'] = 'Out of Stock'
             dryout_df = pd.concat([godry_df, outofstock_df], ignore_index=True)
@@ -51,6 +55,7 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
         if sql:
             q='select * from {0}.{1}'.format(database_name,yv209dModel._meta.db_table)
             yv209d_df=pd.read_sql(q, con=engine)
+            yv209d_df.fillna("-",inplace=True)
             # yv209d_df=read_frame(yv209dModel.objects.all())
         yv209d_df=yv209d_df[['Ship2Party','Name 1','RTD(in KM)','REMARKS','Sales Document','Material']]
         yv209d_df['Material']=yv209d_df['Material'].astype('str')
@@ -61,6 +66,7 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
         if sql: 
             q='select * from {0}.{1}'.format(database_name,yv208Model._meta.db_table)
             yv208_df=pd.read_sql(q, con=engine)
+            yv208_df.fillna("-",inplace=True)
             # yv208_df=read_frame(yv208Model.objects.all())
         yv208_df=yv208_df[['Material','Vehicle','Ship2Party','Name','Invoice']]
         yv208_df['Material']=yv208_df['Material'].astype('str')
@@ -71,6 +77,7 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
         if sql:
             q='select * from {0}.{1}'.format(database_name,rolistModel._meta.db_table)
             rolist_df=pd.read_sql(q, con=engine)
+            rolist_df.fillna("-",inplace=True)
             # rolist_df=read_frame(rolistModel.objects.all())
         rolist_df['Ship2Party']=rolist_df['Ship2Party'].map(lambda x:"0000"+str(x))
     df_yv209dpending=pd.merge(left=dryout_df,right=yv209d_df,how='inner',left_on=['RO CODE','PRODUCT'],right_on=['Ship2Party','Material'])
@@ -245,7 +252,8 @@ def index(request):
                 user = settings.DATABASES['default']['USER']
                 password = settings.DATABASES['default']['PASSWORD']
                 database_name = settings.DATABASES['default']['NAME']
-                database_url = 'mysql+pymysql://{user}:{password}@localhost:3306/{database_name}'.format(user=user,password=password,database_name=database_name)
+                host = settings.DATABASES['default']['HOST']
+                database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,password=password,host=host,database_name=database_name)
                 engine = sqlalchemy.create_engine(database_url) #, echo=False
                 df_nodry.append(pd.read_sql('select * from {0}.{1}'.format(database_name,yv209dModel._meta.db_table), con=engine))
                 df_nodry[-1]['Ship2Party']=df_nodry[-1]['Ship2Party'].astype('str')
@@ -330,7 +338,8 @@ def Upload(request):
                 user = settings.DATABASES['default']['USER']
                 password = settings.DATABASES['default']['PASSWORD']
                 database_name = settings.DATABASES['default']['NAME']
-                database_url = 'mysql+pymysql://{user}:{password}@localhost:3306/{database_name}'.format(user=user,password=password,database_name=database_name)
+                host = settings.DATABASES['default']['HOST']
+                database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,password=password,host=host,database_name=database_name)
                 engine = sqlalchemy.create_engine(database_url) #, echo=False
                 for df in df_list:
                     # df['id']=df.index

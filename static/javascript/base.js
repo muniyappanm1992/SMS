@@ -7,7 +7,7 @@ $(document).ready(function() {
         title=$(".title").text()
         console.log(array);
         $.ajax({
-            url: "/muni",
+            url: "/dryout/muni",
             type: "POST",
             dataType: "json",
             data: {

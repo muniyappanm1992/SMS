@@ -67,9 +67,8 @@ def index(request):
             user = settings.DATABASES['default']['USER']
             password = settings.DATABASES['default']['PASSWORD']
             database_name = settings.DATABASES['default']['NAME']
-            database_url = 'mysql+pymysql://{user}:{password}@localhost:3306/{database_name}'.format(user=user,
-                                                                                                     password=password,
-                                                                                                     database_name=database_name)
+            host = settings.DATABASES['default']['HOST']
+            database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,password=password,host=host,database_name=database_name)
             engine = sqlalchemy.create_engine(database_url)  # , echo=False
             df_yvrokar=pd.read_sql('select * from {0}.{1}'.format(database_name, yvrokarModel._meta.db_table), con=engine)
             df_yqlab = pd.read_sql('select * from {0}.{1}'.format(database_name, yqlabModel._meta.db_table),con=engine)
@@ -125,7 +124,8 @@ def Upload(request):
                 user = settings.DATABASES['default']['USER']
                 password = settings.DATABASES['default']['PASSWORD']
                 database_name = settings.DATABASES['default']['NAME']
-                database_url = 'mysql+pymysql://{user}:{password}@localhost:3306/{database_name}'.format(user=user,password=password,database_name=database_name)
+                host = settings.DATABASES['default']['HOST']
+                database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,password=password,host=host,database_name=database_name)
                 engine = sqlalchemy.create_engine(database_url) #, echo=False
                 for df in df_category:
                     for j,column in enumerate(Columns):
