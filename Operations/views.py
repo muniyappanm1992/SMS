@@ -212,7 +212,7 @@ def index(request):
                     df_temp['Mobile Number'] = df.groupby(['Ship-To Party'])['Mobile Number'].transform(lambda x : ' '.join(x))
                     df['Mobile Type'] = df.groupby(['Ship-To Party'])['Mobile Type'].transform(lambda x : ' '.join(x))
                     df['Mobile Number'] =df_temp['Mobile Number'] 
-                    df = df.drop_duplicates()  
+                    df = df.drop_duplicates(ignore_index=True)  
                     df_Phone = df.copy()
             dryout_df = pd.concat([df_about_to_dry, df_out_of_stock], ignore_index=True)
             df_DryoutExport=Dryout(dryout_df,df_yv209d,df_yv208,df_yv26,df_ROlist,False).copy()
@@ -247,10 +247,13 @@ def index(request):
                 left=['RO CODE','RO CODE','RO CODE','RO CODE','RO CODE','Ship2Party','Ship2Party']
                 sms_tables=["YV209D-dryout",'No indent','YV209D']
                 selected_list = request.POST.get('select')
-                df_Phone = df_Phone.drop_duplicates()  
                 df=pd.merge(left=df_DryoutExport[select.index(selected_list)],right=df_Phone,how='inner',left_on=[left[select.index(selected_list)]],right_on=['Ship-To Party'])
-                df = df.drop_duplicates()  
+                df=df.astype('str') 
                 df=df[HTMLColumn[select.index(selected_list)]]
+                df = df.drop_duplicates(ignore_index=True) 
+                print("after duplicate removal======")
+                print(df.info())
+                print(df)
                 if set([selected_list]).issubset(set(sms_tables)):
                     df['SMS']="SMS"
                 arg={"header":df.columns,"data":df.values.tolist(),"select":selected_list}
@@ -309,12 +312,12 @@ def index(request):
                 df_temp=pd.DataFrame()
                 df_temp['Mobile Number'] = df_Phone.groupby(['Ship-To Party'])['Mobile Number'].transform(lambda x : ' '.join(x))
                 df_Phone['Mobile Type'] = df_Phone.groupby(['Ship-To Party'])['Mobile Type'].transform(lambda x : ' '.join(x))
-                df_Phone['Mobile Number'] =df_temp['Mobile Number'] 
-                df_Phone = df_Phone.drop_duplicates()  
+                df_Phone['Mobile Number'] =df_temp['Mobile Number']   
                 print("df_nodry=",df_nodry[select.index(selected_list)])
                 df=pd.merge(left=df_nodry[select.index(selected_list)],right=df_Phone,how='inner',left_on=[left[select.index(selected_list)]],right_on=['Ship-To Party'])
-                df = df.drop_duplicates()  
+                df=df.astype('str')  
                 df=df[HTMLColumn[select.index(selected_list)]]
+                df = df.drop_duplicates(ignore_index=True) 
                 if set([selected_list]).issubset(set(sms_tables)):
                     df['SMS']="SMS"
                 arg={"header":df.columns,"data":df.values.tolist(),"select":selected_list}
