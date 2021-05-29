@@ -22,4 +22,4 @@ MaterianDescription=['MS','MS','XP','XP','XP95','HSD','ATF','SKO']
 
 select=["YV209D-dryout",'Planned','Invoiced','Yesterday Supplied','No indent','YV209D','YV208']
 sheet_names = ['YV209D Pending', 'Planned', 'Invoiced', 'Yesterday Supplied','no indent']
-website="https://ioclsalem.el.r.appspot.com/"
+website="www.iocsankari.in"

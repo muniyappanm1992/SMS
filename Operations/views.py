@@ -308,14 +308,14 @@ def index(request):
                 df_Phone=pd.read_sql('select * from {0}.{1}'.format(database_name,romobileModel._meta.db_table), con=engine)
                 df_Phone['Ship-To Party']=df_Phone['Ship-To Party'].astype('str')
                 df_Phone['Ship-To Party']=df_Phone['Ship-To Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
+                df_Phone=df_Phone.astype('str') 
                 # concatenate the string
                 df_temp=pd.DataFrame()
                 df_temp['Mobile Number'] = df_Phone.groupby(['Ship-To Party'])['Mobile Number'].transform(lambda x : ' '.join(x))
                 df_Phone['Mobile Type'] = df_Phone.groupby(['Ship-To Party'])['Mobile Type'].transform(lambda x : ' '.join(x))
                 df_Phone['Mobile Number'] =df_temp['Mobile Number']   
                 print("df_nodry=",df_nodry[select.index(selected_list)])
-                df=pd.merge(left=df_nodry[select.index(selected_list)],right=df_Phone,how='inner',left_on=[left[select.index(selected_list)]],right_on=['Ship-To Party'])
-                df=df.astype('str')  
+                df=pd.merge(left=df_nodry[select.index(selected_list)],right=df_Phone,how='inner',left_on=[left[select.index(selected_list)]],right_on=['Ship-To Party']) 
                 df=df[HTMLColumn[select.index(selected_list)]]
                 df = df.drop_duplicates(ignore_index=True) 
                 if set([selected_list]).issubset(set(sms_tables)):
@@ -329,14 +329,16 @@ def Muni(request):
     print(request.POST)
     if  'array[]' in request.POST:
         array = request.POST.getlist('array[]')
-        title=request.POST.get('title')
+        title=request.POST.get('title') 
+        IndexVal=int(request.POST.get('indexValue'))-1
         print("title",title)
         global select,website
         ind=select.index(title)
         print(HTMLColumn[ind])
         dictionary = dict(zip(HTMLColumn[ind], array))
         MobileNumber=dictionary['Mobile Number']
-        # MobileNumber=917093890777
+        MobileNumber=MobileNumber.split(" ")[IndexVal]
+        MobileNumber=917093890777
         ### SMS #################
         mobileno=[]
         if title=='YV209D':
@@ -346,8 +348,8 @@ def Muni(request):
         elif title=='No indent':
                 message = "Dear {0}, Your RO is about to go dry for {1} at {2}. You are requested to place indent immediately to avoid dryout please . More info visit {3}. IOCL SALEM- MUNIYAPPAN".format("("+dictionary['RO CODE']+") "+dictionary['RO NAME'],dictionary['PRODUCT'],dictionary['EXPECTED DRYOUT DATE/ TIME'],website)
         mobileno.append('{0}'.format(MobileNumber))
-        print("message= ",message)
-        print("MobileNumber= ",MobileNumber)
+        print("message=",message)
+        print("MobileNumber=",MobileNumber)
         # mobileno.append('918870887201') #919442613017 #918985534670
         sender = 'MUNIMM'
         apikey = '1025ci03w5o077767a02l983n405q4620ne'
@@ -370,7 +372,29 @@ def Upload(request):
     if request.user.is_superuser: #True:
         print("super user")
         if "GET" == request.method:
-            return render(request,'Operations/upload.html')
+            user = settings.DATABASES['default']['USER']
+            password = settings.DATABASES['default']['PASSWORD']
+            database_name = settings.DATABASES['default']['NAME']
+            host = settings.DATABASES['default']['HOST']
+            if (host == "127.0.0.1" or host == "localhost"):
+                database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,
+                                                                                                      password=password,
+                                                                                                      host=host,
+                                                                                                      database_name=database_name)
+            else:
+                database_url = 'mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,
+                                                                                                              password=password,
+                                                                                                              host=host,
+                                                                                                              database_name=database_name)
+            engine = sqlalchemy.create_engine(database_url)  # , echo=False
+            timestamp=[]
+            modifiedby=[]
+            for i,model in enumerate(Models):
+                df=pd.read_sql('select {0}, {1} from {2}.{3}'.format("TimeStamp","ModifiedBy",database_name, model._meta.db_table), con=engine)
+                timestamp.append(df["TimeStamp"].values.tolist()[0])
+                modifiedby.append(df["ModifiedBy"].values.tolist()[0])
+            arg={"timestamp":timestamp,"modifiedby":modifiedby}
+            return render(request,'Operations/upload.html',arg)
         elif request.method=='POST' and 'dryout' in request.FILES:
             # Here it is already not empty, and you can attach
             excel_file1 = request.FILES.getlist('dryout')
@@ -405,7 +429,28 @@ def Upload(request):
                         if set(column).issubset(df.columns):
                             Models[j].objects.all().delete() # delete selected SQL table values
                             df.to_sql(Models[j]._meta.db_table, con=engine,index=False,if_exists='replace') #replace, fail,append ,index=False
-            arg={"success":"Data uploaded susuccessfully..."}           
+                        user = settings.DATABASES['default']['USER']
+            password = settings.DATABASES['default']['PASSWORD']
+            database_name = settings.DATABASES['default']['NAME']
+            host = settings.DATABASES['default']['HOST']
+            if (host == "127.0.0.1" or host == "localhost"):
+                database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,
+                                                                                                      password=password,
+                                                                                                      host=host,
+                                                                                                      database_name=database_name)
+            else:
+                database_url = 'mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,
+                                                                                                              password=password,
+                                                                                                              host=host,
+                                                                                                              database_name=database_name)
+            engine = sqlalchemy.create_engine(database_url)  # , echo=False
+            timestamp=[]
+            modifiedby=[]
+            for i,model in enumerate(Models):
+                df=pd.read_sql('select {0}, {1} from {2}.{3}'.format("TimeStamp","ModifiedBy",database_name, model._meta.db_table), con=engine)
+                timestamp.append(df["TimeStamp"].values.tolist()[0])
+                modifiedby.append(df["ModifiedBy"].values.tolist()[0])
+            arg={"success":"Data uploaded susuccessfully...","timestamp":timestamp,"modifiedby":modifiedby}           
             return render(request,'Operations/upload.html',arg)
 def login(request):
     if request.user.is_authenticated:
