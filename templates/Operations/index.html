@@ -8,6 +8,17 @@
 </div>
 <br>
 <div id="sql">
+            <br>
+        <h3>Time of Data Modified as follows:</h3>
+<ol>
+    <li>About to go Dry file : {{timestamp.0}} by {{modifiedby.0}}</li>
+    <li>Out of Stock file : {{timestamp.1}} by {{modifiedby.1}}</li>
+    <li>YV209D SAP downloaded file : {{timestamp.6}} by {{modifiedby.6}}</li>
+    <li>YV208 SAP downloaded file : {{timestamp.5}} by {{modifiedby.5}}</li>
+    <li>YV26 Previous day SAP downloaded file : {{timestamp.4}} by {{modifiedby.4}}</li>
+    <li>MCSI RO list SAP downloaded file : {{timestamp.3}} by {{modifiedby.3}}</li>
+    <li>Mobile Number of RO from SAP Tcode YVSMS : {{timestamp.2}} by {{modifiedby.2}}</li>
+</ol>
     <form class= "my_form" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="custom-control custom-switch">
@@ -27,6 +38,7 @@
         pointer;">
     </form>
 </div>
+<br>
 <div id="local" class="arrange">
         <br>
         <h3>Input files as follows:</h3>

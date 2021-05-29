@@ -120,14 +120,36 @@ def index(request):
     df_DryoutExport=[]
     if request.user.is_authenticated: #True:
         print("is_authenticated",request.user.is_authenticated)
-        now=datetime.now()
         from django.utils import timezone
         now = timezone.localtime(timezone.now())  
         current_date=now.strftime("%d-%m-%Y")
         current_time=now.strftime("%H%M")
         print(request.POST)
         if "GET" == request.method:
-            return render(request, 'Operations/index.html')
+            user = settings.DATABASES['default']['USER']
+            password = settings.DATABASES['default']['PASSWORD']
+            database_name = settings.DATABASES['default']['NAME']
+            host = settings.DATABASES['default']['HOST']
+            if (host == "127.0.0.1" or host == "localhost"):
+                database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,
+                                                                                                      password=password,
+                                                                                                      host=host,
+                                                                                                      database_name=database_name)
+            else:
+                database_url = 'mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,
+                                                                                                              password=password,
+                                                                                                              host=host,
+                                                                                                              database_name=database_name)
+            engine = sqlalchemy.create_engine(database_url)  # , echo=False
+            timestamp=[]
+            modifiedby=[]
+            for i,model in enumerate(Models):
+                df=pd.read_sql('select {0}, {1} from {2}.{3}'.format("TimeStamp","ModifiedBy",database_name, model._meta.db_table), con=engine)
+                timestamp.append(df["TimeStamp"].values.tolist()[0])
+                modifiedby.append(df["ModifiedBy"].values.tolist()[0])
+            arg={"timestamp":timestamp,"modifiedby":modifiedby}
+            print("arg==========",arg)
+            return render(request, 'Operations/index.html',arg)
         elif request.method=='POST' and 'dryout' in request.FILES:
             # Here it is already not empty, and you can attach
             excel_file1 = request.FILES.getlist('dryout')
@@ -355,7 +377,13 @@ def Upload(request):
                     database_url='mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,password=password,host=host,database_name=database_name)
                 engine = sqlalchemy.create_engine(database_url) #, echo=False
                 for df in df_list:
-                    # df['id']=df.index
+                    from django.utils import timezone
+                    now = timezone.localtime(timezone.now())
+                    current_date = now.strftime("%d-%m-%Y")
+                    current_time = now.strftime("%H%M")
+                    df['TimeStamp']=current_date+"("+current_time+")"
+                    df['ModifiedBy'] =request.user.first_name
+                    print("request.user.first_name============",request.user.first_name)
                     for j,column in enumerate(Columns):  
                         if set(column).issubset(df.columns):
                             Models[j].objects.all().delete() # delete selected SQL table values

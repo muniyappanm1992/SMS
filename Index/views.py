@@ -5,7 +5,7 @@ from django.contrib import messages
 def index(request):
     if "GET" == request.method:
         imagenamelist=[]
-        for i in range(26):
+        for i in range(27):
             imagenamelist.append(i+1)
         caption="Indian Oil Sankari Terminal"
         arg={"imagenamelist":imagenamelist,"caption":caption}
