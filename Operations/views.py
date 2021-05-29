@@ -206,7 +206,13 @@ def index(request):
                 elif {'Mobile Number', 'Ship-To Party', 'Sales Office','Mobile Type','Distribution Channel','Name 1'}.issubset(x.columns):
                     df=x.copy()
                     df['Ship-To Party']=df['Ship-To Party'].astype('str')
+                    df['Mobile Number']=df['Mobile Number'].astype('str')
                     df['Ship-To Party']=df['Ship-To Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
+                    df_temp=pd.DataFrame()
+                    df_temp['Mobile Number'] = df.groupby(['Ship-To Party'])['Mobile Number'].transform(lambda x : ' '.join(x))
+                    df['Mobile Type'] = df.groupby(['Ship-To Party'])['Mobile Type'].transform(lambda x : ' '.join(x))
+                    df['Mobile Number'] =df_temp['Mobile Number'] 
+                    df = df.drop_duplicates()  
                     df_Phone = df.copy()
             dryout_df = pd.concat([df_about_to_dry, df_out_of_stock], ignore_index=True)
             df_DryoutExport=Dryout(dryout_df,df_yv209d,df_yv208,df_yv26,df_ROlist,False).copy()
@@ -241,7 +247,9 @@ def index(request):
                 left=['RO CODE','RO CODE','RO CODE','RO CODE','RO CODE','Ship2Party','Ship2Party']
                 sms_tables=["YV209D-dryout",'No indent','YV209D']
                 selected_list = request.POST.get('select')
+                df_Phone = df_Phone.drop_duplicates()  
                 df=pd.merge(left=df_DryoutExport[select.index(selected_list)],right=df_Phone,how='inner',left_on=[left[select.index(selected_list)]],right_on=['Ship-To Party'])
+                df = df.drop_duplicates()  
                 df=df[HTMLColumn[select.index(selected_list)]]
                 if set([selected_list]).issubset(set(sms_tables)):
                     df['SMS']="SMS"
@@ -297,9 +305,15 @@ def index(request):
                 df_Phone=pd.read_sql('select * from {0}.{1}'.format(database_name,romobileModel._meta.db_table), con=engine)
                 df_Phone['Ship-To Party']=df_Phone['Ship-To Party'].astype('str')
                 df_Phone['Ship-To Party']=df_Phone['Ship-To Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
-                print(select)
+                # concatenate the string
+                df_temp=pd.DataFrame()
+                df_temp['Mobile Number'] = df_Phone.groupby(['Ship-To Party'])['Mobile Number'].transform(lambda x : ' '.join(x))
+                df_Phone['Mobile Type'] = df_Phone.groupby(['Ship-To Party'])['Mobile Type'].transform(lambda x : ' '.join(x))
+                df_Phone['Mobile Number'] =df_temp['Mobile Number'] 
+                df_Phone = df_Phone.drop_duplicates()  
                 print("df_nodry=",df_nodry[select.index(selected_list)])
                 df=pd.merge(left=df_nodry[select.index(selected_list)],right=df_Phone,how='inner',left_on=[left[select.index(selected_list)]],right_on=['Ship-To Party'])
+                df = df.drop_duplicates()  
                 df=df[HTMLColumn[select.index(selected_list)]]
                 if set([selected_list]).issubset(set(sms_tables)):
                     df['SMS']="SMS"
