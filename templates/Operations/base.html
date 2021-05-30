@@ -29,10 +29,10 @@
     <br>
         <button class="log"><a href="/">Home</a></button>
         {% if user.is_authenticated %}
-        <button class="log"><a href="logout">logout</a></button>
-        <button class="log"><a href="index">DashBoard</a></button>
+        <button class="log"><a href="/user/logout">logout</a></button>
+        <button class="log"><a href="/dryout/">DashBoard</a></button>
         {% if user.is_superuser %}
-        <button class="log"><a href="upload">upload</a></button>
+        <button class="log"><a href="/dryout/upload">upload</a></button>
         {%endif%}
         <span class="log" style="font-size:1.3rem;">Hello, {{user.first_name}}</span>
         {% else %}

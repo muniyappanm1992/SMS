@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.models import User,auth
+from django.contrib.auth.forms import AuthenticationForm
 import pandas as pd
 import os
 import json
@@ -118,7 +119,7 @@ def index(request):
     df_Phone=pd.DataFrame()
     df_list = []
     df_DryoutExport=[]
-    if request.user.is_authenticated: #True:
+    if request.user.is_staff or request.user.is_superuser: #True:
         print("is_authenticated",request.user.is_authenticated)
         from django.utils import timezone
         now = timezone.localtime(timezone.now())  
@@ -322,9 +323,11 @@ def index(request):
                     df['SMS']="SMS"
                 arg={"header":df.columns,"data":df.values.tolist(),"select":selected_list}
                 return render(request, 'Operations/dryout.html',arg)
-    else:
-        messages.info(request, 'Please login first..')
-        return redirect("/dryout")
+    else: # request.user.is_active:
+        return redirect("/")
+    # else:
+    #     messages.info(request, 'Please login first...')
+    #     return redirect("/user/login")
 def Muni(request):
     print(request.POST)
     if  'array[]' in request.POST:
@@ -379,7 +382,6 @@ def Muni(request):
 def Upload(request):    
     df_list=[]
     if request.user.is_superuser: #True:
-        print("super user")
         if "GET" == request.method:
             user = settings.DATABASES['default']['USER']
             password = settings.DATABASES['default']['PASSWORD']
@@ -461,22 +463,20 @@ def Upload(request):
                 modifiedby.append(df["ModifiedBy"].values.tolist()[0])
             arg={"success":"Data uploaded susuccessfully...","timestamp":timestamp,"modifiedby":modifiedby}           
             return render(request,'Operations/upload.html',arg)
-def login(request):
-    if request.user.is_authenticated:
-        return redirect("/dryout/index")
-    elif request.method=='POST':
-        username=request.POST['username']
-        password=request.POST['password']
-        user=auth.authenticate(username=username,password=password)
-        print("user=",user)
-        if user is not None:
-            auth.login(request,user)
-            return redirect("/dryout/index")
-        else:
-            messages.info(request,'invalid credentials')
-            return render(request,'Operations/login.html')
     else:
-        return render(request,'Operations/login.html')
+        return redirect("/")
+# def login(request):
+#     if request.user.is_staff or request.user.is_superuser:
+#         return redirect("/dryout/index")
+#     elif request.method == "POST":
+#         form = AuthenticationForm(data=request.POST)
+#         if form.is_valid():
+#             user=form.get_user()
+#             auth.login(request,user)
+#             return redirect("/dryout/index")
+#     else:
+#         return redirect("/")
+#     return render(request,'User/login.html',{"form":form})
 def logout(request):
     auth.logout(request)
     return redirect("/")

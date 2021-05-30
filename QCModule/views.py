@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.models import User,auth
+from django.contrib.auth.forms import AuthenticationForm
 import pandas as pd
 from django.conf import settings
 import sqlalchemy
@@ -17,7 +18,7 @@ from .models import Models, yvrokarModel, yqlabModel
 
 def index(request):
     df_list=[]
-    if request.user.is_authenticated: #True:
+    if request.user.is_staff or request.user.is_superuser: #True:
         print("is_authenticated",request.user.is_authenticated)
         from django.utils import timezone
         now = timezone.localtime(timezone.now())
@@ -79,11 +80,11 @@ def index(request):
                           left_on=['Tank','Material'], right_on=['Storage Tank','Material'])
             arg = {"header": df.columns, "data": df.values.tolist(), "select": "QC Dashboard"}
             return render(request, 'QCModule/qc.html', arg)
-
-    else:
-        messages.info(request, 'invalid credentials')
-        return render(request, 'QCModule/login.html')
-
+    else:# request.user.is_active:
+        return redirect("/")
+    # else:
+    #     messages.info(request, 'Please login first...')
+    #     return redirect("/user/login")
 
 def Upload(request):
     df_list=[]
@@ -142,24 +143,19 @@ def Upload(request):
             arg={"success":"Data uploaded successfully..."}
             return render(request,'QCModule/upload.html',arg)
     else:
-        messages.info(request, 'invalid credentials')
-        return render(request, 'QCModule/login.html')
-def login(request):
-    if request.user.is_authenticated:
-        return redirect("/qc/index")
-    elif request.method=='POST':
-        username=request.POST['username']
-        password=request.POST['password']
-        user=auth.authenticate(username=username,password=password)
-        print("user=",user)
-        if user is not None:
-            auth.login(request,user)
-            return redirect("/qc/index")
-        else:
-            messages.info(request,'invalid credentials')
-            return render(request,'QCModule/login.html')
-    else:
-        return render(request,'QCModule/login.html')
+        return redirect("/")
+# def login(request):
+#     if request.user.is_staff or request.user.is_superuser:
+#         return redirect("/dev") # change to "/qc/index" once qc module ready
+#     elif request.method == "POST":
+#         form = AuthenticationForm(data=request.POST)
+#         if form.is_valid():
+#             user=form.get_user()
+#             auth.login(request,user)
+#             return redirect("/dev") # change to "/qc/index" once qc module ready
+#     else:
+#         return redirect("/")
+#     return render(request,'User/login.html',{"form":form})
 def logout(request):
     auth.logout(request)
     return redirect("/")

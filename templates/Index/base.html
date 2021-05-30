@@ -384,7 +384,7 @@ body {
       <a href="/dev">Sales Officer</a>
       <a href="/dev">Transporter</a>
       <a href="/dev">Dealer</a>
-      {% if user.is_authenticated %}
+      {% if request.user.is_staff or request.user.is_superuser %}
       <div class="dropdown">
         <button class="dropbtn">Operation 
           <i class="fa fa-caret-down"></i>
@@ -432,14 +432,15 @@ body {
     </div> -->
     <br>
         {% if user.is_authenticated %}
-        <button class="log"><a href="logout">logout</a></button>
+        <button class="log"><a href="/user/logout">logout</a></button>
 <!--        <button class="log"><a href="index">DashBoard</a></button>-->
 <!--        {% if user.is_superuser %}-->
 <!--        <button class="log"><a href="upload">upload</a></button>-->
 <!--        {%endif%}-->
         <span class="log" style="font-size:1.3rem;">Hello, {{user.first_name}}</span>
         {% else %}
-        <button class="log"><a href="login">login</a></button>
+        <button class="log"><a href="/user/login">login</a></button>
+        <button class="log"><a href="/user/register">Register</a></button>
         {%endif%}
         <br>
         

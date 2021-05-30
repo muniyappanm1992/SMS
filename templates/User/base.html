@@ -16,25 +16,20 @@
 <!--    Auto Refresh-->
 <!--    <meta http-equiv="refresh" content="10">-->
     <title>IOCL</title>
+    <style>
+        </style>
 </head>
 <body >
     <div class='root'>
     <div class="heading">
-        <a href="/"><img class="headimg" src="{% static 'images/iocl.gif' %}" alt="logo"></a>
+    <a href="/"><img class="headimg" src="{% static 'images/iocl.gif' %}" alt="logo"></a>
+    <img src="" alt="">
     <h1 class="headtext">Indian Oil Corporation Limited, Salem Terminal</h1>
     </div>
     <br>
         <button class="log"><a href="/">Home</a></button>
-        {% if user.is_authenticated %}
-        <button class="log"><a href="/user/logout">logout</a></button>
-        <button class="log"><a href="/qc/">DashBoard</a></button>
-        {% if user.is_superuser %}
-        <button class="log"><a href="/qc/upload">upload</a></button>
-        {%endif%}
-        <span class="log" style="font-size:1.3rem;">Hello, {{user.first_name}}</span>
-        {% else %}
-        <button class="log"><a href="">login</a></button>
-        {%endif%}
+        <button class="log"><a href="/user/register">Register</a></button>
+        <button class="log"><a href="/user/login">login</a></button>
         <br>
 {% block content %}
 

@@ -39,7 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'Operations',
     'QCModule',
-    'Index'
+    'Index',
+    "crispy_forms",
+    'User',
 ]
 
 MIDDLEWARE = [
@@ -160,3 +162,5 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS=[os.path.join(BASE_DIR,'static/')]
 # to collect static
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+CRISPY_TEMPLATE_PACK="bootstrap4"

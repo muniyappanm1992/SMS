@@ -20,5 +20,6 @@ urlpatterns = [
     path('', include('Index.urls', namespace="Index")),
     path('qc/', include('QCModule.urls', namespace="QCModule")),
     path('dryout/', include('Operations.urls', namespace="Operations")),
+    path('user/', include('User.urls', namespace="User")),
     path('admin/', admin.site.urls),
 ]

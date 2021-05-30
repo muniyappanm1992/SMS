@@ -9,26 +9,19 @@ def index(request):
             imagenamelist.append(i+1)
         caption="Indian Oil Sankari Terminal"
         arg={"imagenamelist":imagenamelist,"caption":caption}
-
         return render(request, 'Index/index.html',arg)
-
-
 def login(request):
-    if request.user.is_authenticated:
-        return redirect("/qc/index")
-    elif request.method=='POST':
-        username=request.POST['username']
-        password=request.POST['password']
-        user=auth.authenticate(username=username,password=password)
-        print("user=",user)
-        if user is not None:
+    form = AuthenticationForm()
+    if request.method=='POST':
+        form = AuthenticationForm(data=request.POST)
+        if form.is_valid():
+            user=form.get_user()
             auth.login(request,user)
             return redirect("/")
-        else:
-            messages.info(request,'invalid credentials')
-            return render(request,'Index/login.html')
     else:
-        return render(request,'Index/login.html')
+        return redirect("/")
+    return render(request,'User/login.html',{"form":form})
+
 def logout(request):
     auth.logout(request)
     return redirect("/")

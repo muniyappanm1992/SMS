@@ -1,6 +1,6 @@
-{% extends 'Index/base.html' %}
+{% extends 'User/base.html' %}
 {% block content %}
-<div>
+<!-- <div>
     <h1>Login</h1>
     <br>
     <form class= "my_form" method="post" enctype="multipart/form-data">
@@ -12,7 +12,19 @@
         <input type="submit" value="Login" style="border: 1px solid green; padding:5px; border-radius: 5px; cursor:
         pointer;">
     </form>
-</div>
+</div> -->
+{% block title %}
+<h1>Login Here</h1>
+{% endblock %}
+
+{% load crispy_forms_tags %}
+
+    <form method="post" class="from-group">
+	{% csrf_token %}
+	{{form|crispy}}
+	<p>Don't have an accoount? Create one <a href="/user/register" style="color: blue; font-size: large;">here</a></p>
+	<button type="submit" class="btn btn-success">Login</button>	
+    </form>
 <br>
 <div>
     {% for message in messages %}
