@@ -20,16 +20,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-
-with open(r'MMModule\secret_key.txt') as f:
-    SECRET_KEY = f.read().strip()
-f.close()
+SECRET_KEY='tx)0#hf9tbvs#hulfxxi+@ciek5@^xxop@u_m150!tg0y3&n=y'
+# with open(r'MMModule\secret_key.txt') as f:
+#     SECRET_KEY = f.read().strip()
+# f.close()
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['www.iocsankari.in','127.0.0.1','localhost','iocsankari.in','iocsankari.el.r.appspot.com']
 
-
+# ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
@@ -76,11 +76,11 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'IOCLSalem.wsgi.application'
-list=[]
-f=open(r'MMModule\db_key.txt','r')
-for line in f:
-    list.append(line.strip())
-f.close()
+# list=[]
+# f=open(r'MMModule\db_key.txt','r')
+# for line in f:
+#     list.append(line.strip())
+# f.close()
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
@@ -89,11 +89,11 @@ if os.getenv('GAE_APPLICATION', None):
     # the unix socket at /cloudsql/<your-cloudsql-connection string>
     DATABASES = {
         'default': {
-            'ENGINE': list[0],
-            'HOST': list[3],
-            'USER': list[4],
-            'PASSWORD': list[1],
-            'NAME': list[2],   
+            'ENGINE': 'django.db.backends.mysql',
+            'HOST': '/cloudsql/iocsankari:asia-south1:sankari-instance',
+            'USER': 'root',
+            'PASSWORD': 'Mana$hema11',
+            'NAME': 'sankari',   
         }
     }
 
@@ -107,12 +107,12 @@ else:
     # See https://cloud.google.com/sql/docs/mysql-connect-proxy
     DATABASES = {
         'default': {
-            'ENGINE': list[0],
-            'HOST': list[5],
-            'PORT': list[6],
-            'NAME': list[2],
-            'USER': list[4],
-            'PASSWORD': list[1],
+            'ENGINE': 'django.db.backends.mysql',
+            'HOST': '127.0.0.1',
+            'PORT': '3306',
+            'NAME': 'sankari',
+            'USER': 'root',
+            'PASSWORD':'Mana$hema11',
         }
     }
 
