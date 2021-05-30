@@ -25,7 +25,6 @@ importlib-metadata==4.0.1
 jdcal==1.4.1
 json2table==1.1.5
 MarkupPy==1.14
-mysql==0.0.2
 mysqlclient==2.0.1
 numpy==1.20.2
 odfpy==1.4.1
