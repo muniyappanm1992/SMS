@@ -1,0 +1,7 @@
+django.db.backends.mysql
+Mana$hema11
+sankari
+/cloudsql/iocsankari:asia-south1:sankari-instance
+root
+127.0.0.1
+3306

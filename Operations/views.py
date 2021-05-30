@@ -325,9 +325,6 @@ def index(request):
                 return render(request, 'Operations/dryout.html',arg)
     else: # request.user.is_active:
         return redirect("/")
-    # else:
-    #     messages.info(request, 'Please login first...')
-    #     return redirect("/user/login")
 def Muni(request):
     print(request.POST)
     if  'array[]' in request.POST:
@@ -342,7 +339,8 @@ def Muni(request):
         MobileNumber=dictionary['Mobile Number']
         if len(MobileNumber.split(" "))>IndexVal:
             MobileNumber=MobileNumber.split(" ")[IndexVal]
-            MobileNumber=917093890777
+            #Test 
+            # MobileNumber=918870887201
             ### SMS #################
             mobileno=[]
             if title=='YV209D':
