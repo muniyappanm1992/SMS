@@ -9,4 +9,5 @@ urlpatterns = [
     path('logout', views.logout, name='logout'),
     # path('upload', views.Upload, name='upload'),
     path('', views.index, name='index'),
+    path('dev', views.Dev, name='index'),
 ]

@@ -108,7 +108,8 @@ $(document).ready(function() {
                 csrfmiddlewaretoken: window.CSRF_TOKEN
                 },
             success : function(json) {
-                alert("sms sent.")
+
+                alert(json.code)
                 // alert("Successfully sent the URL to Django");
                 // window.location.replace('http://take-me-somewhere');
             },
@@ -119,3 +120,4 @@ $(document).ready(function() {
         });
     });  
 });
+

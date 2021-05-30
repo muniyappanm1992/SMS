@@ -6,27 +6,29 @@
         <h3>Input files as follows:</h3>
 
 <ol>
-    <li>About to go Dry file :</li>
+    <li>About to go Dry file : <div class="loader"></div></li>
     <ul><li>{{timestamp.0}} by {{modifiedby.0}}</li></ul>
-    <li>Out of Stock file : </li>
+    <li>Out of Stock file : <div class="loader"></div></li>
     <ul><li>{{timestamp.1}} by {{modifiedby.1}}</li></ul>
-    <li>YV209D SAP downloaded file : </li>
+    <li>YV209D SAP downloaded file : <div class="loader"></div></li>
     <ul><li>{{timestamp.6}} by {{modifiedby.6}}</li></ul>
-    <li>YV208 SAP downloaded file : </li>
+    <li>YV208 SAP downloaded file : <div class="loader"></div></li>
     <ul><li>{{timestamp.5}} by {{modifiedby.5}}</li></ul>
-    <li>YV26 Previous day SAP downloaded file : </li>
+    <li>YV26 Previous day SAP downloaded file :<div class="loader"></div> </li>
     <ul><li>{{timestamp.4}} by {{modifiedby.4}}</li></ul>
-    <li>MCSI RO list SAP downloaded file : </li>
+    <li>MCSI RO list SAP downloaded file : <div class="loader"></div></li>
     <ul><li>{{timestamp.3}} by {{modifiedby.3}}</li></ul>
-    <li>Mobile Number of RO from SAP Tcode YVSMS : </li>
+    <li>Mobile Number of RO from SAP Tcode YVSMS : <div class="loader"></div></li>
     <ul><li>{{timestamp.2}} by {{modifiedby.2}}</li></ul>
 </ol>
 <br>
 <div>
-    <form class= "my_form" method="post" enctype="multipart/form-data">
+    <form class= "my_form" id="upload_dryout" method="post" enctype="multipart/form-data">
         {% csrf_token %}
+        <div id="input_dryout">
         <input type="file" title="Upload 1st excel" name="dryout" style="border: 1px solid black; padding: 5px;  border-radius: 5px;"
                required="required" multiple>
+            </div>
         <!-- <select id="dryout" name="select" style="border: 1px solid black; padding: 8px;  border-radius: 5px;">
                 <option value="YV209D">YV209D</option>
                 <option value="YV208">YV208</option>

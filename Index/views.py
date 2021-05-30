@@ -32,3 +32,5 @@ def login(request):
 def logout(request):
     auth.logout(request)
     return redirect("/")
+def Dev(request): # under development
+    return render(request,'Index/dev.html')

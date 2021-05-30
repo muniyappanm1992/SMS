@@ -337,36 +337,45 @@ def Muni(request):
         print(HTMLColumn[ind])
         dictionary = dict(zip(HTMLColumn[ind], array))
         MobileNumber=dictionary['Mobile Number']
-        MobileNumber=MobileNumber.split(" ")[IndexVal]
-        MobileNumber=917093890777
-        ### SMS #################
-        mobileno=[]
-        if title=='YV209D':
-            message = "Dear {0}, Your SO no:{1} cannot be processed due to {2}. More information visit {3}. IOCL SALEM Terminal- MUNIYAPPAN".format("("+dictionary['Ship2Party']+") "+dictionary['Name 1_x'],dictionary['Sales Document'],dictionary['REMARKS'],website)
-        elif title=="YV209D-dryout":
-                message = "Dear {0}, Your SO no:{1} cannot be processed due to {2}. More information visit {3}. IOCL SALEM Terminal- MUNIYAPPAN".format("("+dictionary['RO CODE']+") "+dictionary['RO NAME'],dictionary['Sales Document'],dictionary['REMARKS'],website)
-        elif title=='No indent':
-                message = "Dear {0}, Your RO is about to go dry for {1} at {2}. You are requested to place indent immediately to avoid dryout please . More info visit {3}. IOCL SALEM- MUNIYAPPAN".format("("+dictionary['RO CODE']+") "+dictionary['RO NAME'],dictionary['PRODUCT'],dictionary['EXPECTED DRYOUT DATE/ TIME'],website)
-        mobileno.append('{0}'.format(MobileNumber))
-        print("message=",message)
-        print("MobileNumber=",MobileNumber)
-        # mobileno.append('918870887201') #919442613017 #918985534670
-        sender = 'MUNIMM'
-        apikey = '1025ci03w5o077767a02l983n405q4620ne'
-        baseurl = 'https://instantalerts.co/api/web/send/?apikey='+apikey
-        print(baseurl)
-        for mobile in mobileno:
-            url= baseurl+'&sender='+sender+'&to='+mobile+'&message='+message+'&format=json'
-            print(url)
-            response = requests.get(url)
-            print(response.json())
-            # Check for HTTP codes other than 200
-            if response.status_code != 200:
-                print('Status:', response, 'Problem with the request.')
+        if len(MobileNumber.split(" "))>IndexVal:
+            MobileNumber=MobileNumber.split(" ")[IndexVal]
+            MobileNumber=917093890777
             ### SMS #################
-            data = {'code': 'Success'}
+            mobileno=[]
+            if title=='YV209D':
+                message = "Dear {0}, Your SO no:{1} cannot be processed due to {2}. More information visit {3}. IOCL SALEM Terminal- MUNIYAPPAN".format("("+dictionary['Ship2Party']+") "+dictionary['Name 1_x'],dictionary['Sales Document'],dictionary['REMARKS'],website)
+            elif title=="YV209D-dryout":
+                    message = "Dear {0}, Your SO no:{1} cannot be processed due to {2}. More information visit {3}. IOCL SALEM Terminal- MUNIYAPPAN".format("("+dictionary['RO CODE']+") "+dictionary['RO NAME'],dictionary['Sales Document'],dictionary['REMARKS'],website)
+            elif title=='No indent':
+                    message = "Dear {0}, Your RO is about to go dry for {1} at {2}. You are requested to place indent immediately to avoid dryout please . More info visit {3}. IOCL SALEM- MUNIYAPPAN".format("("+dictionary['RO CODE']+") "+dictionary['RO NAME'],dictionary['PRODUCT'],dictionary['EXPECTED DRYOUT DATE/ TIME'],website)
+            mobileno.append('{0}'.format(MobileNumber))
+            print("message=",message)
+            print("MobileNumber=",MobileNumber)
+            # mobileno.append('918870887201') #919442613017 #918985534670
+            sender = 'MUNIMM'
+            apikey = '1025ci03w5o077767a02l983n405q4620ne'
+            baseurl = 'https://instantalerts.co/api/web/send/?apikey='+apikey
+            print(baseurl)
+            for mobile in mobileno:
+                url= baseurl+'&sender='+sender+'&to='+mobile+'&message='+message+'&format=json'
+                print(url)
+                response = requests.get(url)
+                print(response.json())
+                try:
+                    data = {'code': response.json()['error']}
+                except:
+                    data = {'code': "sms sent and awaited delivery"}
+                # # Check for HTTP codes other than 200
+                # if response.status_code != 200:
+                #     print('Status:', response, 'Problem with the request.')
+                ### SMS #################
+
+                js_data = json.dumps(data)
+            return JsonResponse(data)
+        else:
+            data = {'code': 'please enter valid postion number'}
             js_data = json.dumps(data)
-        return JsonResponse(data)
+            return JsonResponse(data)
 def Upload(request):    
     df_list=[]
     if request.user.is_superuser: #True:
