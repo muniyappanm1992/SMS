@@ -146,8 +146,11 @@ def index(request):
             modifiedby=[]
             for i,model in enumerate(Models):
                 df=pd.read_sql('select {0}, {1} from {2}.{3}'.format("TimeStamp","ModifiedBy",database_name, model._meta.db_table), con=engine)
-                timestamp.append(df["TimeStamp"].values.tolist()[0])
-                modifiedby.append(df["ModifiedBy"].values.tolist()[0])
+                try:
+                    timestamp.append(df["TimeStamp"].values.tolist()[0])
+                    modifiedby.append(df["ModifiedBy"].values.tolist()[0])
+                except:
+                    pass
             arg={"timestamp":timestamp,"modifiedby":modifiedby}
             print("arg==========",arg)
             return render(request, 'Operations/index.html',arg)
@@ -400,8 +403,11 @@ def Upload(request):
             modifiedby=[]
             for i,model in enumerate(Models):
                 df=pd.read_sql('select {0}, {1} from {2}.{3}'.format("TimeStamp","ModifiedBy",database_name, model._meta.db_table), con=engine)
-                timestamp.append(df["TimeStamp"].values.tolist()[0])
-                modifiedby.append(df["ModifiedBy"].values.tolist()[0])
+                try:
+                    timestamp.append(df["TimeStamp"].values.tolist()[0])
+                    modifiedby.append(df["ModifiedBy"].values.tolist()[0])
+                except:
+                    pass
             arg={"timestamp":timestamp,"modifiedby":modifiedby}
             return render(request,'Operations/upload.html',arg)
         elif request.method=='POST' and 'dryout' in request.FILES:
@@ -457,8 +463,11 @@ def Upload(request):
             modifiedby=[]
             for i,model in enumerate(Models):
                 df=pd.read_sql('select {0}, {1} from {2}.{3}'.format("TimeStamp","ModifiedBy",database_name, model._meta.db_table), con=engine)
-                timestamp.append(df["TimeStamp"].values.tolist()[0])
-                modifiedby.append(df["ModifiedBy"].values.tolist()[0])
+                try:
+                    timestamp.append(df["TimeStamp"].values.tolist()[0])
+                    modifiedby.append(df["ModifiedBy"].values.tolist()[0])
+                except:
+                    pass
             arg={"success":"Data uploaded susuccessfully...","timestamp":timestamp,"modifiedby":modifiedby}           
             return render(request,'Operations/upload.html',arg)
     else:
