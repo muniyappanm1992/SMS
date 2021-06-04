@@ -376,15 +376,18 @@ body {
     <div class='root'>
     <div class="heading">
       <a href="/"><img class="headimg" src="{% static 'images/iocl.gif' %}" alt="logo"></a>
-    <h1 class="headtext">Indian Oil Corporation Limited, Salem Terminal</h1>
+      <div class="headtext">
+      <h1>Indian Oil Corporation Limited</h1>
+       <h1 >Salem Terminal</h1>
+      </div>
     </div>
 
 
     <div class="topnav" id="myTopnav">
       <a href="/">Home</a>
+      <a href="/dev">About</a>
       <a href="/dev">Sales Officer</a>
-      <a href="/dev">Transporter</a>
-      <a href="/dev">Dealer</a>
+      <a href="/dev">Customer</a>
       {% if request.user.is_staff or request.user.is_superuser %}
       <div class="dropdown">
         <button class="dropbtn">Operation 
@@ -416,7 +419,6 @@ body {
         </div>
       </div> 
       {%endif%}
-      <a href="/dev">About</a>
       <a href="javascript:void(0);" style="font-size:15px;" class="icon" onclick="myFunction()">&#9776;</a>
     </div>
 

@@ -16,13 +16,24 @@
 <!--    Auto Refresh-->
 <!--    <meta http-equiv="refresh" content="10">-->
     <title>IOCL</title>
+    <style>
+        .headtext {
+  text-align: center;
+  font-size: 1.5vw;
+  margin-left: 20%;
+  font-weight: bolder;
+}
+    </style>
 </head>
 <body >
     <div class='root'>
-    <div class="heading">
-        <a href="/"><img class="headimg" src="{% static 'images/iocl.gif' %}" alt="logo"></a>
-    <h1 class="headtext">Indian Oil Corporation Limited, Salem Terminal</h1>
-    </div>
+        <div class="heading">
+            <a href="/"><img class="headimg" src="{% static 'images/iocl.gif' %}" alt="logo"></a>
+            <div class="headtext">
+            <h1>Indian Oil Corporation Limited</h1>
+             <h1 >Salem Terminal</h1>
+            </div>
+          </div>
     <br>
         <button class="log"><a href="/">Home</a></button>
         {% if user.is_authenticated %}

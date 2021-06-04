@@ -6,7 +6,7 @@ def index(request):
     if "GET" == request.method:
         imagenamelist=[]
         for i in range(27):
-            imagenamelist.append(i+1)
+            imagenamelist.append(str(i+1))
         caption="Indian Oil Sankari Terminal"
         arg={"imagenamelist":imagenamelist,"caption":caption}
         return render(request, 'Index/index.html',arg)

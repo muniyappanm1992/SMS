@@ -80,8 +80,8 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
         yv208_df=yv208_df[['Material','Vehicle','Ship2Party','Name','Invoice']]
         yv208_df['Material']=yv208_df['Material'].astype('str')
         Code2Description(yv208_df,'Material')
+        yv208_df['Ship2Party'] = yv208_df['Ship2Party'].astype('str')
         yv208_df['Ship2Party']=yv208_df['Ship2Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
-        yv208_df['Ship2Party']=yv208_df['Ship2Party'].astype('str')
     if True: # rolist block
         if sql:
             q='select * from {0}.{1}'.format(database_name,rolistModel._meta.db_table)
