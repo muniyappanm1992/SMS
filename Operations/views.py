@@ -432,16 +432,17 @@ def Upload(request):
                 else:
                     database_url='mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,password=password,host=host,database_name=database_name)
                 engine = sqlalchemy.create_engine(database_url) #, echo=False
-                for df in df_list:
+                for i,df in enumerate(df_list):
                     from django.utils import timezone
                     now = timezone.localtime(timezone.now())
                     current_date = now.strftime("%d-%m-%Y")
                     current_time = now.strftime("%H%M")
-                    df['TimeStamp']=current_date+"("+current_time+")"
-                    df['ModifiedBy'] =request.user.first_name
-                    print("request.user.first_name============",request.user.first_name)
-                    for j,column in enumerate(Columns):  
+                    for j,column in enumerate(Columns):
                         if set(column).issubset(df.columns):
+                            df = df[column]
+                            df['TimeStamp'] = current_date + "(" + current_time + ")"
+                            df['ModifiedBy'] = request.user.first_name
+                            df['id'] = df.index
                             Models[j].objects.all().delete() # delete selected SQL table values
                             df.to_sql(Models[j]._meta.db_table, con=engine,index=False,if_exists='replace') #replace, fail,append ,index=False
                         user = settings.DATABASES['default']['USER']
@@ -468,7 +469,7 @@ def Upload(request):
                     modifiedby.append(df["ModifiedBy"].values.tolist()[0])
                 except:
                     pass
-            arg={"success":"Data uploaded susuccessfully...","timestamp":timestamp,"modifiedby":modifiedby}           
+            arg={"success":"Data uploaded successfully...","timestamp":timestamp,"modifiedby":modifiedby}
             return render(request,'Operations/upload.html',arg)
     else:
         return redirect("/")

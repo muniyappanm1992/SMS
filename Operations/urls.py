@@ -1,7 +1,7 @@
-from django.urls import path
+from django.urls import path, include
 
 from . import views
-
+from .router import router
 app_name = "Operations"
 
 urlpatterns = [
@@ -9,4 +9,5 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('muni', views.Muni, name='muni'),
     path('upload', views.Upload, name='upload'),
+    path('api/',include(router.urls)),
 ]
