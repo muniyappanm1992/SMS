@@ -13,7 +13,6 @@ from django.http import JsonResponse
 import requests
 from datetime import datetime
 from .columns import Columns,yqlabColumn,yvrokarColumn
-from .models import Models, yvrokarModel, yqlabModel
 
 
 def index(request):
@@ -74,8 +73,8 @@ def index(request):
             else:
                 database_url='mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,password=password,host=host,database_name=database_name)
             engine = sqlalchemy.create_engine(database_url) #, echo=False
-            df_yvrokar=pd.read_sql('select * from {0}.{1}'.format(database_name, yvrokarModel._meta.db_table), con=engine)
-            df_yqlab = pd.read_sql('select * from {0}.{1}'.format(database_name, yqlabModel._meta.db_table),con=engine)
+            df_yvrokar=pd.read_sql('select * from {0}.{1}'.format(database_name, ), con=engine)
+            df_yqlab = pd.read_sql('select * from {0}.{1}'.format(database_name, ),con=engine)
             df = pd.merge(left=df_yvrokar, right=df_yqlab, how='inner',
                           left_on=['Tank','Material'], right_on=['Storage Tank','Material'])
             arg = {"header": df.columns, "data": df.values.tolist(), "select": "QC Dashboard"}
@@ -138,8 +137,8 @@ def Upload(request):
                     for j,column in enumerate(Columns):
                         if set(df.columns).issubset(column):
                             print("Column match {0}    ".format(Columns.index(column)),column)
-                            Models[j].objects.all().delete() # delete selected SQL table values
-                            df.to_sql(Models[j]._meta.db_table, con=engine,index=False,if_exists='replace') #replace, fail,append ,index=False
+                            # Models[j].objects.all().delete() # delete selected SQL table values
+                            # df.to_sql(Models[j]._meta.db_table, con=engine,index=False,if_exists='replace') #replace, fail,append ,index=False
             arg={"success":"Data uploaded successfully..."}
             return render(request,'QCModule/upload.html',arg)
     else:
