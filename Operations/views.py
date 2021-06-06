@@ -39,11 +39,11 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
             yv26_df=pd.read_sql(q, con=engine)
             yv26_df.fillna("-",inplace=True)
             # yv26_df=read_frame(yv26Model.objects.all())
-        yv26_df=yv26_df[['Rec. Code','Receiver','Mat.Code','Volume(KL)','PGI Date','InvoiceNo.']]
-        yv26_df['Mat.Code']=yv26_df['Mat.Code'].astype('str')
-        Code2Description(yv26_df,'Mat.Code')
-        yv26_df['Rec. Code']=yv26_df['Rec. Code'].astype('str')
-        yv26_df['Rec. Code']=yv26_df['Rec. Code'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
+        yv26_df=yv26_df[['Rec Code','Receiver','MatCode','Volume(KL)','PGI Date','InvoiceNo']]
+        yv26_df['MatCode']=yv26_df['MatCode'].astype('str')
+        Code2Description(yv26_df,'MatCode')
+        yv26_df['Rec Code']=yv26_df['Rec Code'].astype('str')
+        yv26_df['Rec Code']=yv26_df['Rec Code'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
     if True: # dryout block
         if sql:
             q='select * from {0}.{1}'.format(database_name,dbTableName['godry'])
@@ -103,9 +103,9 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
     df_filter=dryout_df[~boolen_series]
     df_noindent=pd.merge(left=df_filter,right=rolist_df,how='inner',left_on=['RO CODE'],right_on=['Ship2Party'])
     df_noindent["ROMaterial"]=df_noindent["RO CODE"].astype('str')+df_noindent["PRODUCT"].astype('str')
-    yv26_df["ROMaterial"]=yv26_df["Rec. Code"].astype('str')+yv26_df["Mat.Code"].astype('str')
+    yv26_df["ROMaterial"]=yv26_df["Rec Code"].astype('str')+yv26_df["MatCode"].astype('str')
     boolen_yv26=df_noindent['ROMaterial'].isin(yv26_df['ROMaterial'].values.tolist())
-    df_yesterdaysupplied=pd.merge(left=df_noindent,right=yv26_df,how='inner',left_on=['RO CODE','PRODUCT'],right_on=['Rec. Code','Mat.Code'])
+    df_yesterdaysupplied=pd.merge(left=df_noindent,right=yv26_df,how='inner',left_on=['RO CODE','PRODUCT'],right_on=['Rec Code','MatCode'])
     df_noindent=df_noindent[~boolen_yv26]
     print("List===",[df_yv209dpending,df_plan,df_invoiced,df_yesterdaysupplied,df_noindent])
     return [df_yv209dpending,df_plan,df_invoiced,df_yesterdaysupplied,df_noindent]
@@ -166,6 +166,7 @@ def index(request):
                 elif str(i).lower().endswith(('.xls', '.xlsx')):
                     sheets=pd.read_excel(i,sheet_name=None)
                     df = pd.concat(sheets[frame] for frame in sheets.keys())
+                df.columns = [sub.replace('.', '') for sub in df.columns]
                 df_list.append(df)
             # return render(request, 'Operations/login.html')
             for x in df_list:                               
@@ -204,9 +205,9 @@ def index(request):
                     df['Ship2Party']=df['Ship2Party'].astype('str')
                     df['Ship2Party']=df['Ship2Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
                     df_yv208 = df.copy()
-                elif {'Rec. Code', 'Receiver', 'PGI Date', 'InvoiceNo.','Mat.Code','Volume(KL)'}.issubset(x.columns):
+                elif {'Rec Code', 'Receiver', 'PGI Date', 'InvoiceNo','MatCode','Volume(KL)'}.issubset(x.columns):
                     df_yv26 = x.copy()
-                elif {'Ship2Party', 'Name', 'SOff.','Rg'}.issubset(x.columns):
+                elif {'Ship2Party', 'Name', 'SOff','Rg'}.issubset(x.columns):
                     df_ROlist = x.copy()
                 elif {'Mobile Number', 'Ship-To Party', 'Sales Office','Mobile Type','Distribution Channel','Name 1'}.issubset(x.columns):
                     df=x.copy()
@@ -422,6 +423,7 @@ def Upload(request):
                 elif str(i).lower().endswith(('.xls', '.xlsx')):
                     sheets=pd.read_excel(i,sheet_name=None)
                     df = pd.concat(sheets[frame] for frame in sheets.keys())
+                df.columns=[sub.replace('.', '') for sub in df.columns]
                 df_list.append(df)
             if True: # upload excel file to mySQL database.efficent method
                 user = settings.DATABASES['default']['USER']
