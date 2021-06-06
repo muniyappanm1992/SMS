@@ -19,7 +19,7 @@ YV208Column=['Sales Office','Ship2Party', 'Name','Material','Quantity', 'Shipmen
 HTMLColumn=[yv209dDryoutColumn,plannedColumn,invoicedColumn,YesterdaySuppliedColumn,NoIndentColumn,YV209DColumn,YV208Column]
 MaterialCode=['16700','16710','17700','17710','17095','50700','32000','40000']
 MaterianDescription=['MS','MS','XP','XP','XP95','HSD','ATF','SKO']
-
+dbTableName={'godry':'godry','outofstock':'outofstock','romobile':'romobile','rolist':'rolist','yv26':'yv26','yv208':'yv208','yv209d':'yv209d'}
 select=["YV209D-dryout",'Planned','Invoiced','Yesterday Supplied','No indent','YV209D','YV208']
 sheet_names = ['YV209D Pending', 'Planned', 'Invoiced', 'Yesterday Supplied','no indent']
 website="www.iocsankari.in"

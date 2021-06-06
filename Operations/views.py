@@ -12,9 +12,10 @@ import requests
 from datetime import datetime
 from django.conf import settings
 import sqlalchemy
-from .models import Models,godryModel,outofstockModel,romobileModel,rolistModel,yv26Model,yv208Model,yv209dModel
+
+# from .models import Models,godryModel,outofstockModel,romobileModel,rolistModel,yv26Model,yv208Model,yv209dModel
 from django_pandas.io import read_frame
-from .column import Columns,godryColumn,outofstockColumn,romobileColumn,rolistColumn,yv26Column,yv208Column,yv209dColumn,HTMLColumn,MaterialCode,MaterianDescription,\
+from .column import dbTableName,Columns,godryColumn,outofstockColumn,romobileColumn,rolistColumn,yv26Column,yv208Column,yv209dColumn,HTMLColumn,MaterialCode,MaterianDescription,\
 sheet_names,select,website
 def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFrame(),yv26_df=pd.DataFrame(),rolist_df=pd.DataFrame(),sql=True):
     user = settings.DATABASES['default']['USER']
@@ -34,7 +35,7 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
         df.replace({columnName: Material}, {columnName: Description}, regex=True,inplace=True)
     if True: # yv26 block
         if sql:
-            q='select * from {0}.{1}'.format(database_name,yv26Model._meta.db_table)
+            q='select * from {0}.{1}'.format(database_name,dbTableName['yv26'])
             yv26_df=pd.read_sql(q, con=engine)
             yv26_df.fillna("-",inplace=True)
             # yv26_df=read_frame(yv26Model.objects.all())
@@ -45,11 +46,11 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
         yv26_df['Rec. Code']=yv26_df['Rec. Code'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
     if True: # dryout block
         if sql:
-            q='select * from {0}.{1}'.format(database_name,godryModel._meta.db_table)
+            q='select * from {0}.{1}'.format(database_name,dbTableName['godry'])
             godry_df=pd.read_sql(q, con=engine)
             godry_df.fillna("-",inplace=True)
             # godry_df=read_frame(godryModel.objects.all())
-            q='select * from {0}.{1}'.format(database_name,outofstockModel._meta.db_table)
+            q='select * from {0}.{1}'.format(database_name,dbTableName['outofstock'])
             outofstock_df=pd.read_sql(q, con=engine)
             outofstock_df.fillna("-",inplace=True)
             outofstock_df['EXPECTED DRYOUT DATE/ TIME']="NA"
@@ -62,7 +63,7 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
         dryout_df['RO-PRODUCT'] = dryout_df['RO CODE'] + '-' + +dryout_df['PRODUCT'].astype('str')
     if True: # yv209d block
         if sql:
-            q='select * from {0}.{1}'.format(database_name,yv209dModel._meta.db_table)
+            q='select * from {0}.{1}'.format(database_name,dbTableName['yv209d'])
             yv209d_df=pd.read_sql(q, con=engine)
             yv209d_df.fillna("-",inplace=True)
             # yv209d_df=read_frame(yv209dModel.objects.all())
@@ -73,7 +74,7 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
         yv209d_df['Ship2Party']=yv209d_df['Ship2Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
     if True: # yv208 block   
         if sql: 
-            q='select * from {0}.{1}'.format(database_name,yv208Model._meta.db_table)
+            q='select * from {0}.{1}'.format(database_name,dbTableName['yv208'])
             yv208_df=pd.read_sql(q, con=engine)
             yv208_df.fillna("-",inplace=True)
             # yv208_df=read_frame(yv208Model.objects.all())
@@ -84,7 +85,7 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
         yv208_df['Ship2Party']=yv208_df['Ship2Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
     if True: # rolist block
         if sql:
-            q='select * from {0}.{1}'.format(database_name,rolistModel._meta.db_table)
+            q='select * from {0}.{1}'.format(database_name,dbTableName['rolist'])
             rolist_df=pd.read_sql(q, con=engine)
             rolist_df.fillna("-",inplace=True)
             # rolist_df=read_frame(rolistModel.objects.all())
@@ -144,8 +145,8 @@ def index(request):
             engine = sqlalchemy.create_engine(database_url)  # , echo=False
             timestamp=[]
             modifiedby=[]
-            for i,model in enumerate(Models):
-                df=pd.read_sql('select {0}, {1} from {2}.{3}'.format("TimeStamp","ModifiedBy",database_name, model._meta.db_table), con=engine)
+            for i,dataTableName in dbTableName.items():
+                df=pd.read_sql('select {0}, {1} from {2}.{3}'.format("TimeStamp","ModifiedBy",database_name, dataTableName), con=engine)
                 try:
                     timestamp.append(df["TimeStamp"].values.tolist()[0])
                     modifiedby.append(df["ModifiedBy"].values.tolist()[0])
@@ -303,13 +304,13 @@ def index(request):
                 else:
                     database_url='mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,password=password,host=host,database_name=database_name)
                 engine = sqlalchemy.create_engine(database_url) #, echo=False
-                df_nodry.append(pd.read_sql('select * from {0}.{1}'.format(database_name,yv209dModel._meta.db_table), con=engine))
+                df_nodry.append(pd.read_sql('select * from {0}.{1}'.format(database_name,dbTableName['yv209d']), con=engine))
                 df_nodry[-1]['Ship2Party']=df_nodry[-1]['Ship2Party'].astype('str')
                 df_nodry[-1]['Ship2Party']=df_nodry[-1]['Ship2Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
-                df_nodry.append(pd.read_sql('select * from {0}.{1}'.format(database_name,yv208Model._meta.db_table), con=engine))
+                df_nodry.append(pd.read_sql('select * from {0}.{1}'.format(database_name,dbTableName['yv208']), con=engine))
                 df_nodry[-1]['Ship2Party']=df_nodry[-1]['Ship2Party'].astype('str')
                 df_nodry[-1]['Ship2Party']=df_nodry[-1]['Ship2Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
-                df_Phone=pd.read_sql('select * from {0}.{1}'.format(database_name,romobileModel._meta.db_table), con=engine)
+                df_Phone=pd.read_sql('select * from {0}.{1}'.format(database_name,dbTableName['romobile']), con=engine)
                 df_Phone['Ship-To Party']=df_Phone['Ship-To Party'].astype('str')
                 df_Phone['Ship-To Party']=df_Phone['Ship-To Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
                 df_Phone=df_Phone.astype('str') 
@@ -401,8 +402,8 @@ def Upload(request):
             engine = sqlalchemy.create_engine(database_url)  # , echo=False
             timestamp=[]
             modifiedby=[]
-            for i,model in enumerate(Models):
-                df=pd.read_sql('select {0}, {1} from {2}.{3}'.format("TimeStamp","ModifiedBy",database_name, model._meta.db_table), con=engine)
+            for i,dataTableName in dbTableName.items():
+                df=pd.read_sql('select {0}, {1} from {2}.{3}'.format("TimeStamp","ModifiedBy",database_name, dataTableName), con=engine)
                 try:
                     timestamp.append(df["TimeStamp"].values.tolist()[0])
                     modifiedby.append(df["ModifiedBy"].values.tolist()[0])
@@ -443,34 +444,34 @@ def Upload(request):
                             df['TimeStamp'] = current_date + "(" + current_time + ")"
                             df['ModifiedBy'] = request.user.first_name
                             df['id'] = df.index
-                            Models[j].objects.all().delete() # delete selected SQL table values
-                            df.to_sql(Models[j]._meta.db_table, con=engine,index=False,if_exists='replace') #replace, fail,append ,index=False
-                        user = settings.DATABASES['default']['USER']
-            password = settings.DATABASES['default']['PASSWORD']
-            database_name = settings.DATABASES['default']['NAME']
-            host = settings.DATABASES['default']['HOST']
-            if (host == "127.0.0.1" or host == "localhost"):
-                database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,
-                                                                                                      password=password,
-                                                                                                      host=host,
-                                                                                                      database_name=database_name)
-            else:
-                database_url = 'mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,
-                                                                                                              password=password,
-                                                                                                              host=host,
-                                                                                                              database_name=database_name)
-            engine = sqlalchemy.create_engine(database_url)  # , echo=False
-            timestamp=[]
-            modifiedby=[]
-            for i,model in enumerate(Models):
-                df=pd.read_sql('select {0}, {1} from {2}.{3}'.format("TimeStamp","ModifiedBy",database_name, model._meta.db_table), con=engine)
-                try:
-                    timestamp.append(df["TimeStamp"].values.tolist()[0])
-                    modifiedby.append(df["ModifiedBy"].values.tolist()[0])
-                except:
-                    pass
-            arg={"success":"Data uploaded successfully...","timestamp":timestamp,"modifiedby":modifiedby}
-            return render(request,'Operations/upload.html',arg)
+                            tableName=list(dbTableName.values())[j]
+                            df.to_sql(tableName, con=engine,index=False,if_exists='replace') #replace, fail,append ,index=False
+                user = settings.DATABASES['default']['USER']
+                password = settings.DATABASES['default']['PASSWORD']
+                database_name = settings.DATABASES['default']['NAME']
+                host = settings.DATABASES['default']['HOST']
+                if (host == "127.0.0.1" or host == "localhost"):
+                    database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,
+                                                                                                          password=password,
+                                                                                                          host=host,
+                                                                                                          database_name=database_name)
+                else:
+                    database_url = 'mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,
+                                                                                                                  password=password,
+                                                                                                                  host=host,
+                                                                                                                  database_name=database_name)
+                engine = sqlalchemy.create_engine(database_url)  # , echo=False
+                timestamp=[]
+                modifiedby=[]
+                for i,dataTableName in dbTableName.items():
+                    df=pd.read_sql('select {0}, {1} from {2}.{3}'.format("TimeStamp","ModifiedBy",database_name, dataTableName), con=engine)
+                    try:
+                        timestamp.append(df["TimeStamp"].values.tolist()[0])
+                        modifiedby.append(df["ModifiedBy"].values.tolist()[0])
+                    except:
+                        pass
+                arg={"timestamp":timestamp,"modifiedby":modifiedby,'success':'data uploaded successfully'}
+                return render(request,'Operations/upload.html',arg)
     else:
         return redirect("/")
 # def login(request):
