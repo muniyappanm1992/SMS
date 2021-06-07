@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.models import User,auth
 from django.contrib.auth.forms import AuthenticationForm
+from django.db.models.signals import post_save,pre_save,pre_delete,post_delete
 import pandas as pd
 import os
 import json
@@ -13,7 +14,7 @@ from datetime import datetime
 from django.conf import settings
 import sqlalchemy
 
-# from .models import Models,godryModel,outofstockModel,romobileModel,rolistModel,yv26Model,yv208Model,yv209dModel
+from .models import Models,godryModel,outofstockModel,romobileModel,rolistModel,yv26Model,yv208Model,yv209dModel,empModel
 from django_pandas.io import read_frame
 from .column import dbTableName,Columns,godryColumn,outofstockColumn,romobileColumn,rolistColumn,yv26Column,yv208Column,yv209dColumn,HTMLColumn,MaterialCode,MaterianDescription,\
 sheet_names,select,website
@@ -382,7 +383,9 @@ def Muni(request):
             data = {'code': 'please enter valid postion number'}
             js_data = json.dumps(data)
             return JsonResponse(data)
-def Upload(request):    
+def Upload(request):
+    # x=empModel(2,"Muni","25")
+    # x.save()
     df_list=[]
     if request.user.is_superuser: #True:
         if "GET" == request.method:
@@ -491,3 +494,10 @@ def Upload(request):
 def logout(request):
     auth.logout(request)
     return redirect("/")
+
+def save_post(sender,instance,**kwargs):
+    print("tested-post")
+post_delete.connect(save_post,sender=empModel)
+def save_pre(sender,instance,**kwargs):
+    print("tested-pre")
+pre_delete.connect(save_pre,sender=empModel)
