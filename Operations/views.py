@@ -499,8 +499,8 @@ def logout(request):
     return redirect("/")
 
 def postDelete(sender,instance,**kwargs):
-    import pandas as pd
-    df = pd.read_excel(r'D:\Python\Projects\Django\Terminal Stuff\DryOut\yvrokar.XLSX')
-    print(df)
+    # import pandas as pd
+    # df = pd.read_excel(r'D:\Python\Projects\Django\Terminal Stuff\DryOut\yvrokar.XLSX')
+    # print(df)
     print('Triggered')
 post_delete.connect(postDelete,sender=yv208Model)
