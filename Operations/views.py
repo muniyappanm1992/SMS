@@ -13,6 +13,8 @@ import requests
 from datetime import datetime
 from django.conf import settings
 import sqlalchemy
+from django.core.serializers.json import DjangoJSONEncoder
+from django.core import serializers
 
 from .models import Models,godryModel,outofstockModel,romobileModel,rolistModel,yv26Model,yv208Model,yv209dModel,empModel
 from django_pandas.io import read_frame
@@ -448,9 +450,10 @@ def Upload(request):
                             df = df[column]
                             df['TimeStamp'] = current_date + "(" + current_time + ")"
                             df['ModifiedBy'] = request.user.first_name
-                            df['id'] = df.index
-                            tableName=list(dbTableName.values())[j]
-                            df.to_sql(tableName, con=engine,index=False,if_exists='replace') #replace, fail,append ,index=False
+                            # df['id'] = df.index
+                            Models[j].objects.all().delete()
+                            tableName=Models[j]._meta.db_table
+                            df.to_sql(tableName, con=engine,index=False,if_exists='append') #replace, fail,append ,index=False
                 user = settings.DATABASES['default']['USER']
                 password = settings.DATABASES['default']['PASSWORD']
                 database_name = settings.DATABASES['default']['NAME']
@@ -496,8 +499,9 @@ def logout(request):
     return redirect("/")
 
 def save_post(sender,instance,**kwargs):
-    print("tested-post")
-post_delete.connect(save_post,sender=empModel)
+    print("tested-post",instance._state)
+    print("type",type(instance._state))
+post_delete.connect(save_post,sender=yv208Model)
 def save_pre(sender,instance,**kwargs):
-    print("tested-pre")
-pre_delete.connect(save_pre,sender=empModel)
+    print("tested-pre", instance)
+pre_delete.connect(save_pre,sender=yv208Model)

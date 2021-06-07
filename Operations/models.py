@@ -3,7 +3,7 @@ from .column import godryColumn,outofstockColumn,romobileColumn,rolistColumn,yv2
 class godryModel(models.Model):
     class Meta:
             db_table = 'godry' # This tells Django where the SQL table is
-    id=models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True,name='id')
     TimeStampColumn = models.CharField(max_length=100, name="TimeStamp", null=True)
     ModifiedBy = models.CharField(max_length=100, name="ModifiedBy", null=True)
     godryColumn0=models.CharField(max_length=100,name=godryColumn[0].replace(".", ""),null=True)
@@ -29,7 +29,7 @@ class godryModel(models.Model):
 class outofstockModel(models.Model):
     class Meta:
             db_table = 'outofstock' # This tells Django where the SQL table is
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True,name='id')
     TimeStampColumn = models.CharField(max_length=100, name="TimeStamp", null=True)
     ModifiedBy = models.CharField(max_length=100, name="ModifiedBy", null=True)
     outofstockColumn0=models.CharField(max_length=100,name=outofstockColumn[0].replace(".", ""),null=True)
@@ -49,7 +49,7 @@ class outofstockModel(models.Model):
 class romobileModel(models.Model):
     class Meta:
             db_table = 'romobile' # This tells Django where the SQL table is
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True,name='id')
     TimeStampColumn = models.CharField(max_length=100, name="TimeStamp", null=True)
     ModifiedBy = models.CharField(max_length=100, name="ModifiedBy", null=True)
     romobileColumn0=models.CharField(max_length=100,name=romobileColumn[0].replace(".", ""),null=False)
@@ -68,7 +68,7 @@ class romobileModel(models.Model):
 class rolistModel(models.Model):
     class Meta:
             db_table = 'rolist' # This tells Django where the SQL table is
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True,name='id')
     TimeStampColumn = models.CharField(max_length=100, name="TimeStamp", null=True)
     ModifiedBy = models.CharField(max_length=100, name="ModifiedBy", null=True)
     rolistColumn0=models.CharField(max_length=100,name=rolistColumn[0].replace(".", ""),null=False)
@@ -78,7 +78,7 @@ class rolistModel(models.Model):
 class yv26Model(models.Model):
     class Meta:
             db_table = 'yv26' # This tells Django where the SQL table is
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True,name='id')
     TimeStampColumn = models.CharField(max_length=100, name="TimeStamp", null=True)
     ModifiedBy = models.CharField(max_length=100, name="ModifiedBy", null=True)
     yv26Column0=models.CharField(max_length=100,name=yv26Column[0].replace(".", ""),null=False)
@@ -105,7 +105,7 @@ class yv26Model(models.Model):
 class yv208Model(models.Model):
     class Meta:
             db_table = 'yv208' # This tells Django where the SQL table is
-    id=models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True,name='id')
     TimeStampColumn = models.CharField(max_length=100, name="TimeStamp", null=True)
     ModifiedBy = models.CharField(max_length=100, name="ModifiedBy", null=True)
     yv208Column0=models.CharField(max_length=100,name=yv208Column[0].replace(".", ""),null=True)
@@ -124,7 +124,7 @@ class yv208Model(models.Model):
 class yv209dModel(models.Model):
     class Meta:
             db_table = 'yv209d' # This tells Django where the SQL table is
-    id=models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True,name='id')
     TimeStampColumn = models.CharField(max_length=100, name="TimeStamp", null=True)
     ModifiedBy = models.CharField(max_length=100, name="ModifiedBy", null=True)
     yv209dColumn0=models.CharField(max_length=100,name=yv209dColumn[0].replace(".", ""),null=True)
@@ -149,7 +149,7 @@ class yv209dModel(models.Model):
 Models=[godryModel,outofstockModel,romobileModel,rolistModel,yv26Model,yv208Model,yv209dModel]
 class empModel(models.Model):
     class Meta:
-        db_table = 'mytable' # This tells Django where the SQL table is
-    id = models.IntegerField(primary_key=True,name='id')
+        db_table = 'emp' # This tells Django where the SQL table is
+    id = models.AutoField(primary_key=True,name='id')
     Name=models.CharField(max_length=100,null=True,name="Name")
     Age=models.CharField(max_length=100,null=True,name="Age")
