@@ -453,7 +453,7 @@ def Upload(request):
                             # df['id'] = df.index
                             Models[j].objects.all().delete()
                             tableName=Models[j]._meta.db_table
-                            df.to_sql(tableName, con=engine,index=False,if_exists='append') #replace, fail,append ,index=False
+                            df.to_sql(tableName, con=engine,index=False,if_exists='append') # ***don't use replace #replace, fail,append ,index=False
                 user = settings.DATABASES['default']['USER']
                 password = settings.DATABASES['default']['PASSWORD']
                 database_name = settings.DATABASES['default']['NAME']
