@@ -498,10 +498,9 @@ def logout(request):
     auth.logout(request)
     return redirect("/")
 
-def save_post(sender,instance,**kwargs):
-    print("tested-post",instance._state)
-    print("type",type(instance._state))
-post_delete.connect(save_post,sender=yv208Model)
-def save_pre(sender,instance,**kwargs):
-    print("tested-pre", instance)
-pre_delete.connect(save_pre,sender=yv208Model)
+def postDelete(sender,instance,**kwargs):
+    import pandas as pd
+    df = pd.read_excel(r'D:\Python\Projects\Django\Terminal Stuff\DryOut\yvrokar.XLSX')
+    print(df)
+    print('Triggered')
+post_delete.connect(postDelete,sender=yv208Model)
