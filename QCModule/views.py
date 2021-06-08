@@ -138,7 +138,7 @@ def Upload(request):
                         if set(df.columns).issubset(column):
                             print("Column match {0}    ".format(Columns.index(column)),column)
                             # Models[j].objects.all().delete() # delete selected SQL table values
-                            # df.to_sql(Models[j]._meta.db_table, con=engine,index=False,if_exists='replace') #replace, fail,append ,index=False
+                            # df.to_sql(Models[j]._meta.db_table, con=engine,index=False,if_exists='append') #replace, fail,append ,index=False
             arg={"success":"Data uploaded successfully..."}
             return render(request,'QCModule/upload.html',arg)
     else:
