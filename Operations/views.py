@@ -357,15 +357,6 @@ def Upload(request):
                 df.columns=[sub.replace('.', '') for sub in df.columns]
                 df_list.append(df)
             if True: # upload excel file to mySQL database.efficent method
-                # user = settings.DATABASES['default']['USER']
-                # password = settings.DATABASES['default']['PASSWORD']
-                # database_name = settings.DATABASES['default']['NAME']
-                # host = settings.DATABASES['default']['HOST']
-                # if(host=="127.0.0.1" or host=="localhost"):
-                #     database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,password=password,host=host,database_name=database_name)
-                # else:
-                #     database_url='mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,password=password,host=host,database_name=database_name)
-                # engine = sqlalchemy.create_engine(database_url) #, echo=False
                 for i,df in enumerate(df_list):
                     from django.utils import timezone
                     now = timezone.localtime(timezone.now())

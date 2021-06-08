@@ -13,7 +13,7 @@ from django.http import JsonResponse
 import requests
 from datetime import datetime
 from .columns import Columns,yqlabColumn,yvrokarColumn
-
+from .models import Models
 
 def index(request):
     df_list=[]
@@ -39,6 +39,7 @@ def index(request):
                 elif str(i).lower().endswith(('.xls', '.xlsx')):
                     sheets = pd.read_excel(i, sheet_name=None)
                     df_read = pd.concat(sheets[frame] for frame in sheets.keys())
+                    df_read.columns=[sub.replace('.', '') for sub in df_read.columns]
                 df_list.append(df_read)
             for x in df_list:
                 if {'Material', 'Tank', 'Tank Status', 'Opening Dip',
@@ -53,7 +54,7 @@ def index(request):
                     df_yvrokar["Status"] = df_yvrokar["QtyDiff"].map(
                         lambda x: "Dormant" if abs(x) < 10 else ("Receipt" if x > 10 else "Dispatch"))
                     print(df_yvrokar.columns)
-                elif {'Lab Register No.', 'Plant', 'Material', 'Storage Tank',
+                elif {'Lab Register No', 'Plant', 'Material', 'Storage Tank',
                       'Test Laboratory', 'Inspection Lot'}.issubset(
                     x.columns):
                     df_yqlab = x.copy()
@@ -73,10 +74,9 @@ def index(request):
             else:
                 database_url='mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,password=password,host=host,database_name=database_name)
             engine = sqlalchemy.create_engine(database_url) #, echo=False
-            df_yvrokar=pd.read_sql('select * from {0}.{1}'.format(database_name, ), con=engine)
-            df_yqlab = pd.read_sql('select * from {0}.{1}'.format(database_name, ),con=engine)
-            df = pd.merge(left=df_yvrokar, right=df_yqlab, how='inner',
-                          left_on=['Tank','Material'], right_on=['Storage Tank','Material'])
+            df_yvrokar=pd.read_sql('select * from {0}.{1}'.format(database_name,Models[1]._meta.db_table),con=engine)
+            df_yqlab = pd.read_sql('select * from {0}.{1}'.format(database_name,Models[0]._meta.db_table),con=engine)
+            df = pd.merge(left=df_yvrokar, right=df_yqlab, how='inner',left_on=['Tank','Material'], right_on=['Storage Tank','Material'])
             arg = {"header": df.columns, "data": df.values.tolist(), "select": "QC Dashboard"}
             return render(request, 'QCModule/qc.html', arg)
     else:# request.user.is_active:
@@ -102,6 +102,7 @@ def Upload(request):
                 elif str(i).lower().endswith(('.xls', '.xlsx')):
                     sheets=pd.read_excel(i,sheet_name=None)
                     df_read = pd.concat(sheets[frame] for frame in sheets.keys())
+                    df_read.columns=[sub.replace('.', '') for sub in df_read.columns]
                 df_list.append(df_read)
             for x in df_list:
                 if { 'Material', 'Tank', 'Tank Status', 'Opening Dip',
@@ -116,8 +117,8 @@ def Upload(request):
                         lambda x: "Dormant" if abs(x) < 10 else ("Receipt" if x > 10 else "Dispatch"))
                     df_category.append(df_yvrokar)
                     print(df_yvrokar.columns)
-                elif { 'Lab Register No.', 'Plant', 'Material', 'Storage Tank',
-                    'Test Laboratory','Inspection Lot'}.issubset(
+                elif { 'Lab Register No', 'Plant', 'Material', 'Storage Tank','Sample Drawn By',
+                    'Inspection Lot'}.issubset(
                         x.columns):
                     df_yqlab = x.copy()
                     df_category.append(df_yqlab)
@@ -135,10 +136,11 @@ def Upload(request):
                 engine = sqlalchemy.create_engine(database_url) #, echo=False
                 for df in df_category:
                     for j,column in enumerate(Columns):
-                        if set(df.columns).issubset(column):
+                        if set(column).issubset(df.columns):
                             print("Column match {0}    ".format(Columns.index(column)),column)
-                            # Models[j].objects.all().delete() # delete selected SQL table values
-                            # df.to_sql(Models[j]._meta.db_table, con=engine,index=False,if_exists='append') #replace, fail,append ,index=False
+                            Models[j].objects.all().delete() # delete selected SQL table values
+                            df=df[column]
+                            df.to_sql(Models[j]._meta.db_table, con=engine,index=False,if_exists='append') #replace, fail,append ,index=False
             arg={"success":"Data uploaded successfully..."}
             return render(request,'QCModule/upload.html',arg)
     else:
