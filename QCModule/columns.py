@@ -9,5 +9,3 @@ yvrokarColumn=['Material', 'Unit', 'Tank', 'Tank Status', 'Opening Dip', 'Waterd
        'Loss/Gain', 'Remarks', 'QtyDiff', 'Status']
 
 Columns=[yqlabColumn,yvrokarColumn]
-
-print(len(yqlabColumn))

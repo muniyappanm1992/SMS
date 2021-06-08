@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User,auth
 from django.contrib.auth.forms import AuthenticationForm
 from django.db.models.signals import post_save,pre_save,pre_delete,post_delete
+from django.utils import timezone
 import pandas as pd
 import os
 import json
@@ -13,15 +14,11 @@ import requests
 from datetime import datetime
 from django.conf import settings
 import sqlalchemy
-from django.core.serializers.json import DjangoJSONEncoder
-from django.core import serializers
-import cx_Oracle
-
 from .models import Models,godryModel,outofstockModel,romobileModel,rolistModel,yv26Model,yv208Model,yv209dModel,empModel
 from django_pandas.io import read_frame
 from .column import dbTableName,Columns,godryColumn,outofstockColumn,romobileColumn,rolistColumn,yv26Column,yv208Column,yv209dColumn,HTMLColumn,MaterialCode,MaterianDescription,\
 sheet_names,select,website,VIEWS,Date_x
-def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFrame(),yv26_df=pd.DataFrame(),rolist_df=pd.DataFrame(),sql=True):
+def engineCreate():
     user = settings.DATABASES['default']['USER']
     password = settings.DATABASES['default']['PASSWORD']
     database_name = settings.DATABASES['default']['NAME']
@@ -30,11 +27,49 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
         database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,password=password,host=host,database_name=database_name)
     else:
         database_url='mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,password=password,host=host,database_name=database_name)
-    print("host=====",host)
-    print("user=====",user)
-    print("password=====",password)
-    print("database_name=====",database_name)
     engine = sqlalchemy.create_engine(database_url) #, echo=False
+    return engine,database_name
+def dbModifiedBy():
+    engine,database_name=engineCreate()
+    timestamp=[]
+    modifiedby=[]
+    for i,dataTableName in dbTableName.items():
+        df=pd.read_sql('select {0}, {1} from {2}.{3}'.format("TimeStamp","ModifiedBy",database_name, dataTableName), con=engine)
+        try:
+            timestamp.append(df["TimeStamp"].values.tolist()[0])
+            modifiedby.append(df["ModifiedBy"].values.tolist()[0])
+        except:
+            pass
+    arg={"timestamp":timestamp,"modifiedby":modifiedby}
+    return arg
+def exportExcel(df):
+    now = timezone.localtime(timezone.now())  
+    current_date=now.strftime("%d-%m-%Y")
+    current_time=now.strftime("%H%M")
+    with BytesIO() as b:
+        writer = pd.ExcelWriter(b, engine='xlsxwriter')
+        for i, df_excel in enumerate(df):
+            df_excel.to_excel(writer, sheet_name=sheet_names[i], index=False)
+            # Indicate workbook and worksheet for formatting
+            workbook = writer.book
+            worksheet = writer.sheets[sheet_names[i]]
+            formater = workbook.add_format({'border': 1})
+            # Iterate through each column and set the width == the max length in that column. A padding length of 2
+            # is also added.
+            for j, col in enumerate(df_excel.columns):
+                # find length of column i
+                column_len = df_excel[col].astype(str).str.len().max()
+                # Setting the length if the column header is larger
+                # than the max column value length
+                column_len = max(column_len, len(col)) + 2
+                # set the column length
+                worksheet.set_column(j, j, column_len, formater)
+        writer.save()
+        response = HttpResponse(b.getvalue(), content_type='application/vnd.ms-excel')
+        response['Content-Disposition'] = 'attachment; filename="dryout status at {0} hrs on {1}.xlsx"'.format(current_time,current_date)
+        return response
+def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFrame(),yv26_df=pd.DataFrame(),rolist_df=pd.DataFrame(),sql=True):
+    engine,database_name=engineCreate()
     def Code2Description(df,columnName,Material=MaterialCode,Description=MaterianDescription):
         df.replace({columnName: Material}, {columnName: Description}, regex=True,inplace=True)
     if True: # yv26 block
@@ -113,6 +148,7 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
     df_noindent=df_noindent[~boolen_yv26]
     print("List===",[df_yv209dpending,df_plan,df_invoiced,df_yesterdaysupplied,df_noindent])
     return [df_yv209dpending,df_plan,df_invoiced,df_yesterdaysupplied,df_noindent]
+
 def index(request):
     df_out_of_stock = pd.DataFrame()
     df_about_to_dry = pd.DataFrame()
@@ -126,43 +162,12 @@ def index(request):
     df_DryoutExport=[]
     if request.user.is_staff or request.user.is_superuser: #True:
         print("is_authenticated",request.user.is_authenticated)
-        from django.utils import timezone
-        now = timezone.localtime(timezone.now())  
-        current_date=now.strftime("%d-%m-%Y")
-        current_time=now.strftime("%H%M")
         print(request.POST)
         if "GET" == request.method:
-            user = settings.DATABASES['default']['USER']
-            password = settings.DATABASES['default']['PASSWORD']
-            database_name = settings.DATABASES['default']['NAME']
-            host = settings.DATABASES['default']['HOST']
-            if (host == "127.0.0.1" or host == "localhost"):
-                database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,
-                                                                                                      password=password,
-                                                                                                      host=host,
-                                                                                                      database_name=database_name)
-            else:
-                database_url = 'mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,
-                                                                                                              password=password,
-                                                                                                              host=host,
-                                                                                                              database_name=database_name)
-            engine = sqlalchemy.create_engine(database_url)  # , echo=False
-            timestamp=[]
-            modifiedby=[]
-            for i,dataTableName in dbTableName.items():
-                df=pd.read_sql('select {0}, {1} from {2}.{3}'.format("TimeStamp","ModifiedBy",database_name, dataTableName), con=engine)
-                try:
-                    timestamp.append(df["TimeStamp"].values.tolist()[0])
-                    modifiedby.append(df["ModifiedBy"].values.tolist()[0])
-                except:
-                    pass
-            arg={"timestamp":timestamp,"modifiedby":modifiedby}
-            print("arg==========",arg)
-            return render(request, 'Operations/index.html',arg)
-        elif request.method=='POST' and 'dryout' in request.FILES:
-            # Here it is already not empty, and you can attach
+            return render(request, 'Operations/index.html',dbModifiedBy())
+        elif request.method=='POST' and 'dryout' in request.FILES: # uploading files locally to proceed
             excel_file1 = request.FILES.getlist('dryout')
-            for i in excel_file1: # uploaded ecel file to pandas dataframe
+            for i in excel_file1:
                 print(i)
                 df = pd.DataFrame()
                 if str(i).lower().endswith('.csv'):
@@ -172,8 +177,7 @@ def index(request):
                     df = pd.concat(sheets[frame] for frame in sheets.keys())
                 df.columns = [sub.replace('.', '') for sub in df.columns]
                 df_list.append(df)
-            # return render(request, 'Operations/login.html')
-            for x in df_list:                               
+            for x in df_list: # find correct file from randomly uploaded file by its column name mathch                            
                 if { 'DO NAME', 'RO CODE', 'RO NAME', 'PRODUCT',
                     'TOTAL HOURS STOCK OUT'}.issubset(
                         x.columns):
@@ -227,29 +231,7 @@ def index(request):
             dryout_df = pd.concat([df_about_to_dry, df_out_of_stock], ignore_index=True)
             df_DryoutExport=Dryout(dryout_df,df_yv209d,df_yv208,df_yv26,df_ROlist,False).copy()
             if 'export' in request.POST: # export dryout list in excel and download in local machine
-                with BytesIO() as b:
-                    writer = pd.ExcelWriter(b, engine='xlsxwriter')
-                    for i, df_excel in enumerate(df_DryoutExport):
-                        df_excel.to_excel(writer, sheet_name=sheet_names[i], index=False)
-                        # Indicate workbook and worksheet for formatting
-                        workbook = writer.book
-                        worksheet = writer.sheets[sheet_names[i]]
-                        formater = workbook.add_format({'border': 1})
-                        # Iterate through each column and set the width == the max length in that column. A padding length of 2
-                        # is also added.
-                        for j, col in enumerate(df_excel.columns):
-                            # find length of column i
-                            column_len = df_excel[col].astype(str).str.len().max()
-                            # Setting the length if the column header is largercurrent_time
-                            # than the max column value length
-                            column_len = max(column_len, len(col)) + 2
-                            # set the column length
-                            worksheet.set_column(j, j, column_len, formater)
-                    writer.save()
-                    response = HttpResponse(b.getvalue(), content_type='application/vnd.ms-excel')
-                    response['Content-Disposition'] = 'attachment; filename="dryout status at {0} hrs on {1}.xlsx"'.format(current_time,current_date)
-                    return response
-                    # return render(request, 'Operations/login.html')
+                    return exportExcel(df_DryoutExport)
             elif 'select' in request.POST: # table web view
                 global select
                 df_DryoutExport.append(df_yv209d)
@@ -270,51 +252,21 @@ def index(request):
                 return render(request, 'Operations/dryout.html',arg)
             else:
                 return render(request, 'Operations/login.html')
-        elif request.method=='POST' and 'dryout' not in request.FILES:
-            df_nodry=Dryout().copy()
+        elif request.method=='POST' and 'dryout' not in request.FILES:# using file from database
+            df_dry=Dryout().copy()
             if 'export' in request.POST: # export dryout list in excel and download in local machine
-                with BytesIO() as b:
-                    writer = pd.ExcelWriter(b, engine='xlsxwriter')
-                    for i, df_excel in enumerate(df_nodry):
-                        df_excel.to_excel(writer, sheet_name=sheet_names[i], index=False)
-                        # Indicate workbook and worksheet for formatting
-                        workbook = writer.book
-                        worksheet = writer.sheets[sheet_names[i]]
-                        formater = workbook.add_format({'border': 1})
-                        # Iterate through each column and set the width == the max length in that column. A padding length of 2
-                        # is also added.
-                        for j, col in enumerate(df_excel.columns):
-                            # find length of column i
-                            column_len = df_excel[col].astype(str).str.len().max()
-                            # Setting the length if the column header is larger
-                            # than the max column value length
-                            column_len = max(column_len, len(col)) + 2
-                            # set the column length
-                            worksheet.set_column(j, j, column_len, formater)
-                    writer.save()
-                    response = HttpResponse(b.getvalue(), content_type='application/vnd.ms-excel')
-                    response['Content-Disposition'] = 'attachment; filename="dryout status at {0} hrs on {1}.xlsx"'.format(current_time,current_date)
-                    return response
-                    # return render(request, 'Operations/login.html')
+                return exportExcel(df_dry)
             elif 'select' in request.POST: # table web view
                 left=['RO CODE','RO CODE','RO CODE','RO CODE','RO CODE','Ship2Party','Ship2Party']
                 sms_tables=["YV209D-dryout",'No indent','YV209D']
                 selected_list = request.POST.get('select')
-                user = settings.DATABASES['default']['USER']
-                password = settings.DATABASES['default']['PASSWORD']
-                database_name = settings.DATABASES['default']['NAME']
-                host = settings.DATABASES['default']['HOST']
-                if(host=="127.0.0.1" or host=="localhost"):
-                    database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,password=password,host=host,database_name=database_name)
-                else:
-                    database_url='mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,password=password,host=host,database_name=database_name)
-                engine = sqlalchemy.create_engine(database_url) #, echo=False
-                df_nodry.append(pd.read_sql('select * from {0}.{1}'.format(database_name,dbTableName['yv209d']), con=engine))
-                df_nodry[-1]['Ship2Party']=df_nodry[-1]['Ship2Party'].astype('str')
-                df_nodry[-1]['Ship2Party']=df_nodry[-1]['Ship2Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
-                df_nodry.append(pd.read_sql('select * from {0}.{1}'.format(database_name,dbTableName['yv208']), con=engine))
-                df_nodry[-1]['Ship2Party']=df_nodry[-1]['Ship2Party'].astype('str')
-                df_nodry[-1]['Ship2Party']=df_nodry[-1]['Ship2Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
+                engine,database_name=engineCreate()
+                df_dry.append(pd.read_sql('select * from {0}.{1}'.format(database_name,dbTableName['yv209d']), con=engine))
+                df_dry[-1]['Ship2Party']=df_dry[-1]['Ship2Party'].astype('str')
+                df_dry[-1]['Ship2Party']=df_dry[-1]['Ship2Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
+                df_dry.append(pd.read_sql('select * from {0}.{1}'.format(database_name,dbTableName['yv208']), con=engine))
+                df_dry[-1]['Ship2Party']=df_dry[-1]['Ship2Party'].astype('str')
+                df_dry[-1]['Ship2Party']=df_dry[-1]['Ship2Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
                 df_Phone=pd.read_sql('select * from {0}.{1}'.format(database_name,dbTableName['romobile']), con=engine)
                 df_Phone['Ship-To Party']=df_Phone['Ship-To Party'].astype('str')
                 df_Phone['Ship-To Party']=df_Phone['Ship-To Party'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
@@ -324,8 +276,8 @@ def index(request):
                 df_temp['Mobile Number'] = df_Phone.groupby(['Ship-To Party'])['Mobile Number'].transform(lambda x : ' '.join(x))
                 df_Phone['Mobile Type'] = df_Phone.groupby(['Ship-To Party'])['Mobile Type'].transform(lambda x : ' '.join(x))
                 df_Phone['Mobile Number'] =df_temp['Mobile Number']   
-                print("df_nodry=",df_nodry[select.index(selected_list)])
-                df=pd.merge(left=df_nodry[select.index(selected_list)],right=df_Phone,how='inner',left_on=[left[select.index(selected_list)]],right_on=['Ship-To Party']) 
+                print("df_dry=",df_dry[select.index(selected_list)])
+                df=pd.merge(left=df_dry[select.index(selected_list)],right=df_Phone,how='inner',left_on=[left[select.index(selected_list)]],right_on=['Ship-To Party']) 
                 df=df[HTMLColumn[select.index(selected_list)]]
                 df = df.drop_duplicates(ignore_index=True) 
                 if set([selected_list]).issubset(set(sms_tables)):
@@ -387,37 +339,10 @@ def Muni(request):
             js_data = json.dumps(data)
             return JsonResponse(data)
 def Upload(request):
-    # x=empModel(2,"Muni","25")
-    # x.save()
     df_list=[]
     if request.user.is_superuser: #True:
         if "GET" == request.method:
-            user = settings.DATABASES['default']['USER']
-            password = settings.DATABASES['default']['PASSWORD']
-            database_name = settings.DATABASES['default']['NAME']
-            host = settings.DATABASES['default']['HOST']
-            if (host == "127.0.0.1" or host == "localhost"):
-                database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,
-                                                                                                      password=password,
-                                                                                                      host=host,
-                                                                                                      database_name=database_name)
-            else:
-                database_url = 'mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,
-                                                                                                              password=password,
-                                                                                                              host=host,
-                                                                                                              database_name=database_name)
-            engine = sqlalchemy.create_engine(database_url)  # , echo=False
-            timestamp=[]
-            modifiedby=[]
-            for i,dataTableName in dbTableName.items():
-                df=pd.read_sql('select {0}, {1} from {2}.{3}'.format("TimeStamp","ModifiedBy",database_name, dataTableName), con=engine)
-                try:
-                    timestamp.append(df["TimeStamp"].values.tolist()[0])
-                    modifiedby.append(df["ModifiedBy"].values.tolist()[0])
-                except:
-                    pass
-            arg={"timestamp":timestamp,"modifiedby":modifiedby}
-            return render(request,'Operations/upload.html',arg)
+            return render(request,'Operations/upload.html',dbModifiedBy())
         elif request.method=='POST' and 'dryout' in request.FILES:
             # Here it is already not empty, and you can attach
             excel_file1 = request.FILES.getlist('dryout')
@@ -432,15 +357,15 @@ def Upload(request):
                 df.columns=[sub.replace('.', '') for sub in df.columns]
                 df_list.append(df)
             if True: # upload excel file to mySQL database.efficent method
-                user = settings.DATABASES['default']['USER']
-                password = settings.DATABASES['default']['PASSWORD']
-                database_name = settings.DATABASES['default']['NAME']
-                host = settings.DATABASES['default']['HOST']
-                if(host=="127.0.0.1" or host=="localhost"):
-                    database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,password=password,host=host,database_name=database_name)
-                else:
-                    database_url='mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,password=password,host=host,database_name=database_name)
-                engine = sqlalchemy.create_engine(database_url) #, echo=False
+                # user = settings.DATABASES['default']['USER']
+                # password = settings.DATABASES['default']['PASSWORD']
+                # database_name = settings.DATABASES['default']['NAME']
+                # host = settings.DATABASES['default']['HOST']
+                # if(host=="127.0.0.1" or host=="localhost"):
+                #     database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,password=password,host=host,database_name=database_name)
+                # else:
+                #     database_url='mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,password=password,host=host,database_name=database_name)
+                # engine = sqlalchemy.create_engine(database_url) #, echo=False
                 for i,df in enumerate(df_list):
                     from django.utils import timezone
                     now = timezone.localtime(timezone.now())
@@ -454,32 +379,9 @@ def Upload(request):
                             # df['id'] = df.index
                             Models[j].objects.all().delete()
                             tableName=Models[j]._meta.db_table
-                            df.to_sql(tableName, con=engine,index=False,if_exists='append') # ***don't use replace #replace, fail,append ,index=False
-                user = settings.DATABASES['default']['USER']
-                password = settings.DATABASES['default']['PASSWORD']
-                database_name = settings.DATABASES['default']['NAME']
-                host = settings.DATABASES['default']['HOST']
-                if (host == "127.0.0.1" or host == "localhost"):
-                    database_url = 'mysql+pymysql://{user}:{password}@{host}:3306/{database_name}'.format(user=user,
-                                                                                                          password=password,
-                                                                                                          host=host,
-                                                                                                          database_name=database_name)
-                else:
-                    database_url = 'mysql+pymysql://{user}:{password}@/{database_name}?unix_socket={host}'.format(user=user,
-                                                                                                                  password=password,
-                                                                                                                  host=host,
-                                                                                                                  database_name=database_name)
-                engine = sqlalchemy.create_engine(database_url)  # , echo=False
-                timestamp=[]
-                modifiedby=[]
-                for i,dataTableName in dbTableName.items():
-                    df=pd.read_sql('select {0}, {1} from {2}.{3}'.format("TimeStamp","ModifiedBy",database_name, dataTableName), con=engine)
-                    try:
-                        timestamp.append(df["TimeStamp"].values.tolist()[0])
-                        modifiedby.append(df["ModifiedBy"].values.tolist()[0])
-                    except:
-                        pass
-                arg={"timestamp":timestamp,"modifiedby":modifiedby,'success':'data uploaded successfully'}
+                            df.to_sql(tableName, con=engineCreate()[0],index=False,if_exists='append') # ***don't use replace #replace, fail,append ,index=False
+                arg=dbModifiedBy()
+                arg['success']='data uploaded successfully'
                 return render(request,'Operations/upload.html',arg)
     else:
         return redirect("/")
