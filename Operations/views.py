@@ -15,11 +15,12 @@ from django.conf import settings
 import sqlalchemy
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core import serializers
+import cx_Oracle
 
 from .models import Models,godryModel,outofstockModel,romobileModel,rolistModel,yv26Model,yv208Model,yv209dModel,empModel
 from django_pandas.io import read_frame
 from .column import dbTableName,Columns,godryColumn,outofstockColumn,romobileColumn,rolistColumn,yv26Column,yv208Column,yv209dColumn,HTMLColumn,MaterialCode,MaterianDescription,\
-sheet_names,select,website
+sheet_names,select,website,VIEWS,Date_x
 def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFrame(),yv26_df=pd.DataFrame(),rolist_df=pd.DataFrame(),sql=True):
     user = settings.DATABASES['default']['USER']
     password = settings.DATABASES['default']['PASSWORD']
@@ -497,10 +498,89 @@ def Upload(request):
 def logout(request):
     auth.logout(request)
     return redirect("/")
+def postSave(sender,instance,**kwargs):
+    print('poatSave Triggered')
 
 def postDelete(sender,instance,**kwargs):
-    # import pandas as pd
-    # df = pd.read_excel(r'D:\Python\Projects\Django\Terminal Stuff\DryOut\yvrokar.XLSX')
-    # print(df)
-    print('Triggered')
-post_delete.connect(postDelete,sender=yv208Model)
+    if False: # tank header density
+        import datetime
+        from pyModbusTCP.client import ModbusClient
+        from datetime import datetime, time
+        from pymodbus.constants import Endian
+        from pymodbus.payload import BinaryPayloadDecoder
+        from pymodbus.client.sync import ModbusTcpClient
+        import pypyodbc
+        client = ModbusTcpClient('192.168.1.124', port=503)
+        connection = client.connect()
+        while not connection:
+            client.close()
+            connection = client.connect()
+            import time
+            time.sleep(1)
+        def validator(instance):
+            if not instance.isError():
+                '''.isError() implemented in pymodbus 1.4.0 and above.'''
+                decoder = BinaryPayloadDecoder.fromRegisters(
+                    instance.registers,
+                    byteorder=Endian.Big, wordorder=Endian.Big
+
+                    # ensure above desired float 32 decoder?
+                    # float AB CD == byteorder=Endian.Big, wordorder = Endian.Big
+                    # float CD AB == byteorder=Endian.Big, wordorder = Endian.Little
+                    # float BA DC == byteorder=Endian.Little, wordorder = Endian.Big
+                    # float DC BA == byteorder=Endian.Little, wordorder = Endian.Little
+                )
+                return float('{0:.3f}'.format(decoder.decode_32bit_float()))
+        def Header_Density():
+            try:
+                if connection:
+                    density_15 = []
+                    density_nat = []
+                    temp = []
+                    # CTMPL RECEIPT
+                    print('Connection established')
+                    r1 = client.read_holding_registers(2043, 2, unit=1)  # Specify the unit.
+                    ms_density = validator(r1)
+                    r2 = client.read_holding_registers(2083, 2, unit=1)  # Specify the unit.
+                    ms_temp = validator(r2)
+                    density_nat.append(ms_density)
+                    temp.append(ms_temp)
+                    ms_15 = round(ms_density + 0.9 * (ms_temp - 15), 2)
+                    density_15.append(ms_15)
+                    r1 = client.read_holding_registers(2047, 2, unit=1)  # Specify the unit.
+                    hsd_density = validator(r1)
+                    r2 = client.read_holding_registers(2087, 2, unit=1)  # Specify the unit.
+                    hsd_temp = validator(r2)
+                    density_nat.append(hsd_density)
+                    temp.append(hsd_temp)
+                    hsd_15 = round(hsd_density + 0.7 * (hsd_temp - 15), 2)
+                    density_15.append(hsd_15)
+                    r1 = client.read_holding_registers(2049, 2, unit=1)  # Specify the unit.
+                    sko_density = validator(r1)
+                    r2 = client.read_holding_registers(2089, 2, unit=1)  # Specify the unit.
+                    sko_temp = validator(r2)
+                    sko_15 = round(sko_density + 0.7 * (sko_temp - 15), 2)
+                    density_15.append(sko_15)
+                    density_nat.append(sko_density)
+                    temp.append(sko_temp)
+                    r1 = client.read_holding_registers(2051, 2, unit=1)  # Specify the unit.
+                    atf_density = validator(r1)
+                    r2 = client.read_holding_registers(2091, 2, unit=1)  # Specify the unit.
+                    atf_temp = validator(r2)
+                    atf_15 = round(atf_density + 0.7 * (atf_temp - 15), 2)
+                    density_15.append(atf_15)
+                    density_nat.append(atf_density)
+                    temp.append(atf_temp)
+                    print(density_15)
+                    return density_15
+                else:
+                    print('Connection not established, Try again')
+            except Exception as e:
+                print(e)
+        print(Header_Density())
+        # import pandas as pd
+        # df = pd.read_excel(r'D:\Python\Projects\Django\Terminal Stuff\DryOut\yvrokar.XLSX')
+        # print(df)
+    print('postDelete Triggered')
+post_delete.connect(postDelete,sender=empModel)
+post_save.connect(postSave,sender=empModel)

@@ -22,4 +22,14 @@ MaterianDescription=['MS','MS','XP','XP','XP95','HSD','ATF','SKO']
 dbTableName={'godry':'godry','outofstock':'outofstock','romobile':'romobile','rolist':'rolist','yv26':'yv26','yv208':'yv208','yv209d':'yv209d'}
 select=["YV209D-dryout",'Planned','Invoiced','Yesterday Supplied','No indent','YV209D','YV208']
 sheet_names = ['YV209D Pending', 'Planned', 'Invoiced', 'Yesterday Supplied','no indent']
+
+VIEWS=['FALSE_FILLING','LPTOTALIZER','TRUCKSUM','VAUDIT_REPORT','VDDITIVETOTALIZER','VETHANOL_TOTALIZER','VEVENTALARM',\
+    'VEXCEPTION_REPORT','VTOTALIZER1','VTRUCKMOVEMENTSTATUS','VTRUCKMOVEMENT_MAIN',\
+        'VTRUCK_HISTORY_DETAILED','VTRUCK_HISTORY_NEW','VTRUCKDETAILS','VTRUCKMOVEMENT_BASE','TT_TOPUP','TT_DENSITYTEMP','TRUCK'] #'VTRUCK_HISTORY'
+
+Date_x=['REPORTDATE','REPORTDATE','REPORTDATE','EVENTDATE','REPORTDATE','REPORTDATE','EVENTDATE','EVENTDATE','REPORTDATE','LOADEDDATETIME',\
+    'REGISTEREDDATETIME','REPORTDATE','REPORTDATE','REPORTDATE','PARKEDDATETIME','STARTTIME','TIMESTAMP','REPORTDATE']
+
+
+
 website="www.iocsankari.in"
