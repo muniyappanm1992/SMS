@@ -439,7 +439,7 @@ def postDelete(sender,instance,**kwargs):
                     density_15 = []
                     density_nat = []
                     temp = []
-                    # CTMPL RECEIPT
+                    # CTMPL RECEIP
                     print('Connection established')
                     r1 = client.read_holding_registers(2043, 2, unit=1)  # Specify the unit.
                     ms_density = validator(r1)
