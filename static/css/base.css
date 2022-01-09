@@ -19,7 +19,6 @@ body {
   border-radius: 10px;
   overflow: auto;
 }
-
 .headimg {
   float: left;
   /* position: relative;
@@ -29,7 +28,7 @@ body {
 }
 .headtext {
   text-align: center;
-  font-size: 1.0rem;
+  font-size: 1rem;
   margin-left: 20%;
   font-weight: bolder;
 }

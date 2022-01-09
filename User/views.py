@@ -1,7 +1,10 @@
-from django.shortcuts import render, redirect
-from .forms import RegisterForm
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.models import User,auth
+from django.contrib.auth.models import User, auth
+from django.shortcuts import redirect, render
+
+from .forms import RegisterForm, UserProfileForm
+
+
 # Create your views here.
 def Register(response):
     if response.method == "POST":
@@ -29,3 +32,21 @@ def login(request):
 def logout(request):
     auth.logout(request)
     return redirect("/")
+def profile(request):
+    if request.user.is_superuser:
+        user=request.user.userprofile
+        form=UserProfileForm(instance=user)
+        if request.method == "GET":
+            arg={'form':form}
+            return render(request,'User/profile.html',arg)
+        if request.method == "POST":
+            form = UserProfileForm(request.POST,request.FILES,instance=user)
+            print('post-form',form)
+            if form.is_valid():
+                form.save()
+                print('frorm valid')
+            form=UserProfileForm(instance=user)
+            arg={'form':form}
+            return render(request,'User/profile.html',arg)
+    else:
+        return redirect("/")

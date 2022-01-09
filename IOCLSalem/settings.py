@@ -25,13 +25,12 @@ SECRET_KEY='tx)0#hf9tbvs#hulfxxi+@ciek5@^xxop@u_m150!tg0y3&n=y'
 #     SECRET_KEY = f.read().strip()
 # f.close()
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['www.iocsankari.in','127.0.0.1','localhost','iocsankari.in','iocsankari.el.r.appspot.com']
+# ALLOWED_HOSTS = ['www.iocsankari.in','127.0.0.1','localhost','iocsankari.in','iocsankari.el.r.appspot.com']
 
-# ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*']
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -39,8 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'corsheaders',
     'Operations',
-    'QCModule',
+    'MaterialManagement',
+    'PersonEntry',
     'Index',
     "crispy_forms",
     'User',
@@ -50,6 +52,7 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware', # ***change in place will create error
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -62,7 +65,7 @@ ROOT_URLCONF = 'IOCLSalem.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR,'templates')],
+        'DIRS': [os.path.join(BASE_DIR,'build'),os.path.join(BASE_DIR,'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -90,7 +93,7 @@ if os.getenv('GAE_APPLICATION', None):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'HOST': '/cloudsql/iocsankari:asia-south1:sankari-instance',
+            'HOST': '/cloudsql/salemterminal:asia-south1:iocsankari',
             'USER': 'root',
             'PASSWORD': 'Mana$hema11',
             'NAME': 'sankari',   
@@ -101,7 +104,7 @@ if os.getenv('GAE_APPLICATION', None):
 else:
     # Running locally so connect to either a local MySQL instance or connect to
     # Cloud SQL via the proxy. To start the proxy via command line:
-    #   $ cloud_sql_proxy -instances=iocsankari:asia-south1:sankari-instance=tcp:3306
+    #   $ cloud_sql_proxy -instances=salemterminal:asia-south1:iocsankari=tcp:3306
     #     $ cloud_sql_proxy -instances=[INSTANCE_CONNECTION_NAME]=tcp:3306
     #
     # See https://cloud.google.com/sql/docs/mysql-connect-proxy
@@ -159,14 +162,45 @@ USE_L10N = True
 USE_TZ = True
 
 
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ]
+}
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
-
 STATIC_URL = '/static/'
+# MEDIA_URL='/media/'
+# MEDIA_ROOT=os.path.join(BASE_DIR,'media')
+from google.oauth2 import service_account
+
+GS_CREDENTIALS=service_account.Credentials.from_service_account_file(os.path.join(BASE_DIR,'salemterminal.json'))
+
+DEFAULT_FILE_STORAGE='IOCLSalem.gcloud.GoogleCloudMediaFileStorage'
+GS_PROJECT_ID = 'salemterminal'
+GS_BUCKET_NAME = 'salemterminal_media'
+MEDIA_ROOT = "/media/"
+UPLOAD_ROOT = 'media/uploads/'
+MEDIA_URL = 'https://storage.googleapis.com/{}/'.format(GS_BUCKET_NAME)
+
+
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 if DEBUG:
-    STATICFILES_DIRS=[os.path.join(BASE_DIR,'static/')]
+    STATICFILES_DIRS=[os.path.join(BASE_DIR,'build/static/'),os.path.join(BASE_DIR,'static/')]
 else:
     # to collect static
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 CRISPY_TEMPLATE_PACK="bootstrap4"
+CORS_ORIGIN_ALLOW_ALL=True
+# CORS_ORIGIN_WHITELIST = [
+#     'http://localhost:3000',
+#     'http://localhost:8000',
+#     'http://localhost:8080',
+# ]
