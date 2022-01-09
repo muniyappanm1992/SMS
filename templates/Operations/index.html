@@ -1,94 +1,176 @@
-{% extends 'Operations/base.html' %}
-{% block content %}
+{% extends 'Operations/base.html' %} {% block content %}
 <h1>Dry Out</h1>
-<br>
+<br />
 <div class="custom-control custom-switch">
-  <input type="checkbox" class="custom-control-input" id="switch1" name="local" onclick="myFunction()">
+  <input
+    type="checkbox"
+    class="custom-control-input"
+    id="switch1"
+    name="local"
+    onclick="myFunction()"
+  />
   <label class="custom-control-label" for="switch1">Local input</label>
 </div>
-<br>
+<br />
 <div id="sql">
-            <br>
-        <h3>Time of Data Modified as follows:</h3>
-<ol>
-  <li>About to go Dry file :</li>
-  <ul><li>{{timestamp.0}} by {{modifiedby.0}}</li></ul>
-  <li>Out of Stock file : </li>
-  <ul><li>{{timestamp.1}} by {{modifiedby.1}}</li></ul>
-  <li>YV209D SAP downloaded file : </li>
-  <ul><li>{{timestamp.6}} by {{modifiedby.6}}</li></ul>
-  <li>YV208 SAP downloaded file : </li>
-  <ul><li>{{timestamp.5}} by {{modifiedby.5}}</li></ul>
-  <li>YV26 Previous day SAP downloaded file : </li>
-  <ul><li>{{timestamp.4}} by {{modifiedby.4}}</li></ul>
-  <li>MCSI RO list SAP downloaded file : </li>
-  <ul><li>{{timestamp.3}} by {{modifiedby.3}}</li></ul>
-  <li>Mobile Number of RO from SAP Tcode YVSMS : </li>
-  <ul><li>{{timestamp.2}} by {{modifiedby.2}}</li></ul>
-</ol>
-    <form class= "my_form" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="custom-control custom-switch">
-          <input type="checkbox" class="custom-control-input" id="switch2" name="export">
-          <label class="custom-control-label" for="switch2">Export excel</label>
-        </div>
-        <select id="loacl_web" name="select" style="border: 1px solid black; padding: 8px;  border-radius: 5px;">
-                <option value="YV209D">YV209D</option>
-                <option value="YV208">YV208</option>
-                <option value="YV209D-dryout">YV209D-dryout</option>
-                <option value="Planned">Planned</option>
-                <option value="Invoiced">Invoiced</option>
-                <option value="Yesterday Supplied">Yesterday Supplied</option>
-                <option value="No indent">No indent</option>
-        </select>
-        <input type="submit" value="Run" style="border: 1px solid green; padding:8px; border-radius: 5px; cursor:
-        pointer;">
-    </form>
+  <br />
+  <h3>Time of Data Modified as follows:</h3>
+  <ol>
+    <li>About to go Dry file :</li>
+    <ul>
+      <li>{{timestamp.0}} by {{modifiedby.0}}</li>
+    </ul>
+    <li>Out of Stock file :</li>
+    <ul>
+      <li>{{timestamp.1}} by {{modifiedby.1}}</li>
+    </ul>
+    <li>YV209D SAP downloaded file :</li>
+    <ul>
+      <li>{{timestamp.6}} by {{modifiedby.6}}</li>
+    </ul>
+    <li>YV208 SAP downloaded file :</li>
+    <ul>
+      <li>{{timestamp.5}} by {{modifiedby.5}}</li>
+    </ul>
+    <li>YV26 Previous day SAP downloaded file :</li>
+    <ul>
+      <li>{{timestamp.4}} by {{modifiedby.4}}</li>
+    </ul>
+    <li>MCSI RO list SAP downloaded file :</li>
+    <ul>
+      <li>{{timestamp.3}} by {{modifiedby.3}}</li>
+    </ul>
+    <li>Mobile Number of RO from SAP Tcode YVSMS :</li>
+    <ul>
+      <li>{{timestamp.2}} by {{modifiedby.2}}</li>
+    </ul>
+    <li>YVR204Q SAP downloaded file :</li>
+    <ul>
+      <li>{{timestamp.7}} by {{modifiedby.7}}</li>
+    </ul>
+  </ol>
+  <form class="my_form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="custom-control custom-switch">
+      <input
+        type="checkbox"
+        class="custom-control-input"
+        id="switch2"
+        name="export"
+      />
+      <label class="custom-control-label" for="switch2">Export excel</label>
+    </div>
+    <select
+      id="loacl_web"
+      name="select"
+      style="border: 1px solid black; padding: 8px; border-radius: 5px"
+    >
+      <option value="YV209D">YV209D</option>
+      <option value="YV208">YV208</option>
+      <option value="YV209D-dryout">YV209D-dryout</option>
+      <option value="Planned">Planned</option>
+      <option value="Invoiced">Invoiced</option>
+      <option value="Yesterday Supplied">Yesterday Supplied</option>
+      <option value="No indent">No indent</option>
+    </select>
+    <input
+      type="submit"
+      value="Run"
+      style="
+        border: 1px solid green;
+        padding: 8px;
+        border-radius: 5px;
+        cursor: pointer;
+      "
+    />
+  </form>
 </div>
-<br>
+<br />
 <div id="local" class="arrange">
-        <br>
-        <h3>Input files as follows:</h3>
-<ol>
-    <li>About to go Dry file <div class="loader"></div></li>
-    <li>Out of Stock file <div class="loader"></div></li>
-    <li>YV209D SAP downloaded file <div class="loader"></div></li>
-    <li>YV208 SAP downloaded file <div class="loader"></div></li>
-    <li>YV26 Previous day SAP downloaded file <div class="loader"></div></li>
-    <li>MCSI RO list SAP downloaded file <div class="loader"></div></li>
-    <li>Mobile Number of RO from SAP Tcode YVSMS <div class="loader"></div></li>
-    
-</ol>
-<br>
-<div>
-    <form class= "my_form" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="custom-control custom-switch">
-          <input type="checkbox" class="custom-control-input" id="switch3" name="export">
-          <label class="custom-control-label" for="switch3">Export excel</label>
-        </div>
-        <input type="file" title="Upload 1st excel" name="dryout" style="border: 1px solid black; padding: 5px;  border-radius: 5px;"
-               required="required" multiple>
-        <select id="dryout" name="select" style="border: 1px solid black; padding: 8px;  border-radius: 5px;">
-                <option value="YV209D">YV209D</option>
-                <option value="YV208">YV208</option>
-                <option value="YV209D-dryout">YV209D-dryout</option>
-                <option value="Planned">Planned</option>
-                <option value="Invoiced">Invoiced</option>
-                <option value="Yesterday Supplied">Yesterday Supplied</option>
-                <option value="No indent">No indent</option>
-        </select>
-        <input type="submit" value="Run" style="border: 1px solid green; padding:8px; border-radius: 5px; cursor:
-        pointer;">
+  <br />
+  <h3>Input files as follows:</h3>
+  <ol>
+    <li>
+      About to go Dry file
+      <div class="loader"></div>
+    </li>
+    <li>
+      Out of Stock file
+      <div class="loader"></div>
+    </li>
+    <li>
+      YV209D SAP downloaded file
+      <div class="loader"></div>
+    </li>
+    <li>
+      YV208 SAP downloaded file
+      <div class="loader"></div>
+    </li>
+    <li>
+      YV26 Previous day SAP downloaded file
+      <div class="loader"></div>
+    </li>
+    <li>
+      MCSI RO list SAP downloaded file
+      <div class="loader"></div>
+    </li>
+    <li>
+      Mobile Number of RO from SAP Tcode YVSMS
+      <div class="loader"></div>
+    </li>
+  </ol>
+  <br />
+  <div>
+    <form class="my_form" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="custom-control custom-switch">
+        <input
+          type="checkbox"
+          class="custom-control-input"
+          id="switch3"
+          name="export"
+        />
+        <label class="custom-control-label" for="switch3">Export excel</label>
+      </div>
+      <input
+        type="file"
+        title="Upload 1st excel"
+        name="dryout"
+        style="border: 1px solid black; padding: 5px; border-radius: 5px"
+        required="required"
+        multiple
+      />
+      <select
+        id="dryout"
+        name="select"
+        style="border: 1px solid black; padding: 8px; border-radius: 5px"
+      >
+        <option value="YV209D">YV209D</option>
+        <option value="YV208">YV208</option>
+        <option value="YV209D-dryout">YV209D-dryout</option>
+        <option value="Planned">Planned</option>
+        <option value="Invoiced">Invoiced</option>
+        <option value="Yesterday Supplied">Yesterday Supplied</option>
+        <option value="No indent">No indent</option>
+      </select>
+      <input
+        type="submit"
+        value="Run"
+        style="
+          border: 1px solid green;
+          padding: 8px;
+          border-radius: 5px;
+          cursor: pointer;
+        "
+      />
     </form>
-</div>
+  </div>
 </div>
 <script>
-
-    // we ready for fire action with JQery.
-      function myFunction() {
-        $( document ).ready(function() {
-      if ($("#switch1").is(":checked")){
+  // we ready for fire action with JQery.
+  function myFunction() {
+    $(document).ready(function () {
+      if ($("#switch1").is(":checked")) {
         console.log("myFunction");
         $("#local").css("display", "block");
         $("#sql").css("display", "none");
@@ -116,5 +198,5 @@
   //   });
   // }
   // exportfun();
-    </script>
+</script>
 {% endblock %}

@@ -1,5 +1,10 @@
-from rest_framework import serializers, fields
-from .models import godryModel,outofstockModel,romobileModel,rolistModel,yv26Model,yv208Model,yv209dModel,empModel
+from rest_framework import fields, serializers
+
+from .models import (empModel, godryModel, outofstockModel, rolistModel,
+                     romobileModel, yv26Model, yv208Model, yv209dModel,
+                     yvr204qModel)
+
+
 class empModelSerializer(serializers.ModelSerializer):
     class Meta:
         model=empModel
@@ -31,5 +36,9 @@ class yv208ModelSerializer(serializers.ModelSerializer):
 class yv209dModelSerializer(serializers.ModelSerializer):
     class Meta:
         model=yv209dModel
+        fields = '__all__'
+class yvr204qModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=yvr204qModel
         fields = '__all__'
 

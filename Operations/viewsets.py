@@ -1,7 +1,14 @@
 from rest_framework import viewsets
-from .models import godryModel,outofstockModel,romobileModel,rolistModel,yv26Model,yv208Model,yv209dModel,empModel
-from .serialaizer import empModelSerializer,godryModelSerializer,outofstockModelSerializer,romobileModelSerializer,\
-    rolistModelSerializer,yv26ModelSerializer,yv208ModelSerializer,yv209dModelSerializer
+
+from .models import (empModel, godryModel, outofstockModel, rolistModel,
+                     romobileModel, yv26Model, yv208Model, yv209dModel,
+                     yvr204qModel)
+from .serialaizer import (empModelSerializer, godryModelSerializer,
+                          outofstockModelSerializer, rolistModelSerializer,
+                          romobileModelSerializer, yv26ModelSerializer,
+                          yv208ModelSerializer, yv209dModelSerializer,
+                          yvr204qModelSerializer)
+
 
 class empModelViewset(viewsets.ModelViewSet):
     queryset = empModel.objects.all()
@@ -27,5 +34,8 @@ class yv208ModelViewset(viewsets.ModelViewSet):
 class yv209dModelViewset(viewsets.ModelViewSet):
     queryset = yv209dModel.objects.all()
     serializer_class = yv209dModelSerializer
+class yvr204qModelViewset(viewsets.ModelViewSet):
+    queryset = yvr204qModel.objects.all()
+    serializer_class = yvr204qModelSerializer
 
 

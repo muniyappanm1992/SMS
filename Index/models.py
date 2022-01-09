@@ -1,3 +1,32 @@
 from django.db import models
 
+
 # Create your models here.
+class ImageModel(models.Model):
+    img1=models.ImageField(upload_to='front',blank=False,verbose_name='Image1',default='blank.JPG')
+    img2=models.ImageField(upload_to='front',blank=False,verbose_name='Image2',default='blank.JPG')
+    img3=models.ImageField(upload_to='front',blank=False,verbose_name='Image3',default='blank.JPG')
+    img4=models.ImageField(upload_to='front',blank=False,verbose_name='Image4',default='blank.JPG')
+    img5=models.ImageField(upload_to='front',blank=False,verbose_name='Image5',default='blank.JPG')
+    img6=models.ImageField(upload_to='front',blank=False,verbose_name='Image6',default='blank.JPG')
+    img7=models.ImageField(upload_to='front',blank=False,verbose_name='Image7',default='blank.JPG')
+    img8=models.ImageField(upload_to='front',blank=False,verbose_name='Image8',default='blank.JPG')
+    img9=models.ImageField(upload_to='front',blank=False,verbose_name='Image9',default='blank.JPG')
+    img10=models.ImageField(upload_to='front',blank=False,verbose_name='Image10',default='blank.JPG')
+    img11=models.ImageField(upload_to='front',blank=False,verbose_name='Image11',default='blank.JPG')
+    img12=models.ImageField(upload_to='front',blank=False,verbose_name='Image12',default='blank.JPG')
+    img13=models.ImageField(upload_to='front',blank=False,verbose_name='Image13',default='blank.JPG')
+    img14=models.ImageField(upload_to='front',blank=False,verbose_name='Image14',default='blank.JPG')
+    img15=models.ImageField(upload_to='front',blank=False,verbose_name='Image15',default='blank.JPG')
+    img16=models.ImageField(upload_to='front',blank=False,verbose_name='Image16',default='blank.JPG')
+    img17=models.ImageField(upload_to='front',blank=False,verbose_name='Image17',default='blank.JPG')
+    img18=models.ImageField(upload_to='front',blank=False,verbose_name='Image18',default='blank.JPG')
+    img19=models.ImageField(upload_to='front',blank=False,verbose_name='Image19',default='blank.JPG')
+    img20=models.ImageField(upload_to='front',blank=False,verbose_name='Image20',default='blank.JPG')
+    img21=models.ImageField(upload_to='front',blank=False,verbose_name='Image21',default='blank.JPG')
+    img22=models.ImageField(upload_to='front',blank=False,verbose_name='Image22',default='blank.JPG')
+    img23=models.ImageField(upload_to='front',blank=False,verbose_name='Image23',default='blank.JPG')
+    img24=models.ImageField(upload_to='front',blank=False,verbose_name='Image24',default='blank.JPG')
+    img25=models.ImageField(upload_to='front',blank=False,verbose_name='Image25',default='blank.JPG')
+    img26=models.ImageField(upload_to='front',blank=False,verbose_name='Image26',default='blank.JPG')
+    img27=models.ImageField(upload_to='front',blank=False,verbose_name='Image27',default='blank.JPG')

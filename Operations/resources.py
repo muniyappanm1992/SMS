@@ -1,5 +1,8 @@
 from import_export import resources
-from .models import godryModel,outofstockModel,romobileModel,rolistModel,yv26Model,yv208Model,yv209dModel,empModel
+
+from .models import (empModel, godryModel, outofstockModel, rolistModel,
+                     romobileModel, yv26Model, yv208Model, yv209dModel,
+                     yvr204qModel)
 
 
 class empModelResource(resources.ModelResource):
@@ -34,3 +37,7 @@ class yv209dModelResource(resources.ModelResource):
     class meta:
         skip_unchanged=True
         model=yv209dModel
+class yvr204qModelResource(resources.ModelResource):
+    class meta:
+        skip_unchanged=True
+        model=yvr204qModel

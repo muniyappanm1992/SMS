@@ -12,6 +12,9 @@
 # below:
 .git
 .gitignore
+# Virtual environment
+venv/
+env/
 
 # Python pycache:
 __pycache__/

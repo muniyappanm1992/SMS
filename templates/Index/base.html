@@ -6,6 +6,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- <link rel="icon" href="{% static 'images/iocl.gif' %}" type="image/gif" sizes="16x16"> -->
+<link rel="icon" type="image/x-icon" href="{% static 'images/iocl.png' %}"">
 <link rel="stylesheet" type="text/css" href="{% static 'css/jquery.dataTables.min.css' %}">
 <link rel="stylesheet" type="text/css" href="{% static 'css/fixedHeader.dataTables.min.css' %}">
 <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
@@ -16,7 +17,7 @@
 <script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; </script>
 <!--    Auto Refresh-->
 <!--    <meta http-equiv="refresh" content="10">-->
-    <title>IOCL</title>
+    <title>IOCL | Salem Terminal</title>
 
 <style>
 
@@ -370,12 +371,31 @@ body {
     text-align: left;
   }
 }
+input {
+  font-size: 20px;
+  height:50px;
+}
+.imagediv {
+	float:left;
+    margin-top:50px;
+}
+.imagediv .showonhover {
+	background:red;
+	padding:20px;
+	opacity:0.9;
+	color:white;
+	width: 100%;
+	display:block;	
+	text-align:center;
+	cursor:pointer;
+}
 </style>
 </head>
 <body >
     <div class='root'>
     <div class="heading">
       <a href="/"><img class="headimg" src="{% static 'images/iocl.gif' %}" alt="logo"></a>
+      <img class="headimg" src="/static/images/front/greenGo.jpg" alt="main gate" style="width:10vw;height:10vw; border-radius:2vw;float: right;" >
       <div class="headtext">
       <h1>Indian Oil Corporation Limited</h1>
        <h1 >Salem Terminal</h1>
@@ -386,8 +406,6 @@ body {
     <div class="topnav" id="myTopnav">
       <a href="/">Home</a>
       <a href="/dev">About</a>
-      <a href="/dev">Sales Officer</a>
-      <a href="/dev">Customer</a>
       {% if request.user.is_staff or request.user.is_superuser %}
       <div class="dropdown">
         <button class="dropbtn">Operation 
@@ -395,34 +413,47 @@ body {
         </button>
         <div class="dropdown-content">
           <a href="/dryout">Dryout</a>
-          <a href="/qc">QC</a>
-          <!-- <a href="/dev">QC</a> -->
-          <a href="/dev">Stock</a>
-        </div>
-      </div> 
-      <div class="dropdown">
-        <button class="dropbtn">Maintenance 
-          <i class="fa fa-caret-down"></i>
-        </button>
-        <div class="dropdown-content">
-          <a href="/dev">Mechanical</a>
-          <a href="/dev">Electrical</a>
-          <a href="/dev">Instrumentation</a>
-        </div>
-      </div> 
-      <div class="dropdown">
-        <button class="dropbtn">Safety 
-          <i class="fa fa-caret-down"></i>
-        </button>
-        <div class="dropdown-content">
-          <a href="/dev">OISD</a>
-          <a href="/dev">Safety Audit</a>
+          <a href="/dryout/upload">Upload</a>
+          <a href="/dashboard">Dashboard</a>
+          <a href="/img">HomePageImageUpload</a>
         </div>
       </div> 
       {%endif%}
-      <a href="javascript:void(0);" style="font-size:15px;" class="icon" onclick="myFunction()">&#9776;</a>
-    </div>
+      <a href="/dryout/tterror">TT Queue Error</a>
+      <a href="/dryout/indentstatus">Indent Status</a>
+                <div class="dropdown">
+        <button class="dropbtn">GatePass (Vendor) 
+          <i class="fa fa-caret-down"></i>
+        </button>
+        <div class="dropdown-content">
+          <a href="/material">Material GatePass</a>
+          <a href="/person">Person GatePass</a>
+        </div>
+      </div> 
+      {% if request.user.is_staff or request.user.is_superuser %}
+            <div class="dropdown">
+        <button class="dropbtn">GatePassReport(IOCL) 
+          <i class="fa fa-caret-down"></i>
+        </button>
+        <div class="dropdown-content">
+          {% if  request.user.is_superuser %}
+          <a href="/material/report">MaterialGatePass</a>
+          <a href="/person/report">PersonGatePass</a>
+          {%endif%}
+    
+      </div> 
+        </div>
+        {%endif%}
+          
+          {% if not request.user.is_superuser %}
+          <a href="/dryout/vendorhelp">Help</a>
+          {%endif%}
+          {% if  request.user.is_superuser %}
+          <a href="/dryout/officerhelp">Help</a>
+          {%endif%}
+          <a href="javascript:void(0);" style="font-size:15px;" class="icon" onclick="myFunction()">&#9776;</a> 
 
+    </div>
 <!-- 
     <div class="navbar">
       <a href="#">Home</a>
@@ -435,16 +466,19 @@ body {
       {%endif%}
     </div> -->
     <br>
+    <img src="{{user.userprofile.image.url}}" width="240">
+        
         {% if user.is_authenticated %}
         <button class="log"><a href="/user/logout">logout</a></button>
+        <button class="log"><a href="/user/profile">profile</a></button>
 <!--        <button class="log"><a href="index">DashBoard</a></button>-->
 <!--        {% if user.is_superuser %}-->
 <!--        <button class="log"><a href="upload">upload</a></button>-->
 <!--        {%endif%}-->
         <span class="log" style="font-size:1.3rem;">Hello, {{user.first_name}}</span>
         {% else %}
-        <button class="log"><a href="/user/login">login</a></button>
-        <button class="log"><a href="/user/register">Register</a></button>
+        <button class="log"><a href="/user/login">For Office use</a></button>
+        <!-- <button class="log"><a href="/user/register">Register</a></button> -->
         {%endif%}
         <br>
         
@@ -505,6 +539,21 @@ body {
     x.className = "topnav";
   }
 }
+
+  $(document).ready(function(){
+  $(".FullscreenBtn").click(function(){
+    console.log('====================================');
+    console.log("Button clicked");
+    console.log('====================================');
+    $(".frame").className="fullScreen"
+  });
+});
+
+  //  let BtnEle = document.querySelector(".Btn");
+  //  let frameEle = document.querySelector(".h_iframe");
+  //  BtnEle.addEventListener("click", () => {
+  //     frameEle.className = "fullScreen";
+  //  });
 
   </script>
 </body>

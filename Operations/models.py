@@ -1,5 +1,10 @@
 from django.db import models
-from .column import godryColumn,outofstockColumn,romobileColumn,rolistColumn,yv26Column,yv208Column,yv209dColumn
+
+from .column import (godryColumn, outofstockColumn, rolistColumn,
+                     romobileColumn, yv26Column, yv208Column, yv209dColumn,
+                     yvr204qColumn)
+
+
 class godryModel(models.Model):
     class Meta:
             db_table = 'godry' # This tells Django where the SQL table is
@@ -26,6 +31,8 @@ class godryModel(models.Model):
     godryColumn17=models.CharField(max_length=100,name=godryColumn[17].replace(".", ""),null=True)
     godryColumn18=models.DateTimeField(max_length=100,name=godryColumn[18].replace(".", ""),null=False)
     godryColumn19=models.CharField(max_length=100,name=godryColumn[19].replace(".", ""),null=False)
+    def __str__(self) -> str:
+        return str(self.id)
 class outofstockModel(models.Model):
     class Meta:
             db_table = 'outofstock' # This tells Django where the SQL table is
@@ -146,10 +153,28 @@ class yv209dModel(models.Model):
     yv209dColumn16=models.CharField(max_length=100,name=yv209dColumn[16].replace(".", ""),null=True)
     yv209dColumn17=models.CharField(max_length=100,name=yv209dColumn[17].replace(".", ""),null=True)
     yv209dColumn18=models.CharField(max_length=100,name=yv209dColumn[18].replace(".", ""),null=True)
-Models=[godryModel,outofstockModel,romobileModel,rolistModel,yv26Model,yv208Model,yv209dModel]
+class yvr204qModel(models.Model):
+    class Meta:
+            db_table = 'yvr204q' # This tells Django where the SQL table is
+    id = models.AutoField(primary_key=True,name='id')
+    TimeStampColumn = models.CharField(max_length=100, name="TimeStamp", null=True)
+    ModifiedBy = models.CharField(max_length=100, name="ModifiedBy", null=True)
+    yvr204qColumn0=models.CharField(max_length=100,name=yvr204qColumn[0],null=True)
+    yvr204qColumn1=models.CharField(max_length=100,name=yvr204qColumn[1],null=True)
+    yvr204qColumn2=models.CharField(max_length=100,name=yvr204qColumn[2],null=True)
+    yvr204qColumn3=models.CharField(max_length=100,name=yvr204qColumn[3],null=True)
+    yvr204qColumn4=models.CharField(max_length=100,name=yvr204qColumn[4],null=True)
+    yvr204qColumn5=models.CharField(max_length=100,name=yvr204qColumn[5],null=True)
+    yvr204qColumn6=models.CharField(max_length=100,name=yvr204qColumn[6],null=True)
+    yvr204qColumn7=models.CharField(max_length=100,name=yvr204qColumn[7],null=True)
+    yvr204qColumn8=models.CharField(max_length=100,name=yvr204qColumn[8],null=True)
+    yvr204qColumn9=models.CharField(max_length=100,name=yvr204qColumn[9],null=True)
+
+Models=[godryModel,outofstockModel,romobileModel,rolistModel,yv26Model,yv208Model,yv209dModel,yvr204qModel]
 class empModel(models.Model):
     class Meta:
         db_table = 'emp' # This tells Django where the SQL table is
     id = models.AutoField(primary_key=True,name='id')
     Name=models.CharField(max_length=100,null=True,name="Name")
     Age=models.CharField(max_length=100,null=True,name="Age")
+

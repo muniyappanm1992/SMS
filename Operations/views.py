@@ -1,23 +1,33 @@
-from io import BytesIO
-from django.http import HttpResponse
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.contrib.auth.models import User,auth
-from django.contrib.auth.forms import AuthenticationForm
-from django.db.models.signals import post_save,pre_save,pre_delete,post_delete
-from django.utils import timezone
-import pandas as pd
-import os
 import json
-from django.http import JsonResponse
-import requests
+import os
 from datetime import datetime
-from django.conf import settings
+from io import BytesIO
+
+import pandas as pd
+import requests
 import sqlalchemy
-from .models import Models,godryModel,outofstockModel,romobileModel,rolistModel,yv26Model,yv208Model,yv209dModel,empModel
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.models import User, auth
+from django.db.models.signals import (post_delete, post_save, pre_delete,
+                                      pre_save)
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import redirect, render
+from django.utils import timezone
 from django_pandas.io import read_frame
-from .column import dbTableName,Columns,godryColumn,outofstockColumn,romobileColumn,rolistColumn,yv26Column,yv208Column,yv209dColumn,HTMLColumn,MaterialCode,MaterianDescription,\
-sheet_names,select,website,VIEWS,Date_x
+from requests.api import request
+
+from .column import (VIEWS, Columns, Date_x, HTMLColumn, MaterialCode,
+                     MaterianDescription, dbTableName, godryColumn,
+                     outofstockColumn, rolistColumn, romobileColumn, select,
+                     sheet_names, website, yv26Column, yv208Column,
+                     yv209dColumn)
+from .models import (Models, empModel, godryModel, outofstockModel,
+                     rolistModel, romobileModel, yv26Model, yv208Model,
+                     yv209dModel)
+
+
 def engineCreate():
     user = settings.DATABASES['default']['USER']
     password = settings.DATABASES['default']['PASSWORD']
@@ -39,7 +49,8 @@ def dbModifiedBy():
             timestamp.append(df["TimeStamp"].values.tolist()[0])
             modifiedby.append(df["ModifiedBy"].values.tolist()[0])
         except:
-            pass
+            timestamp.append('')
+            modifiedby.append('')
     arg={"timestamp":timestamp,"modifiedby":modifiedby}
     return arg
 def exportExcel(df):
@@ -94,9 +105,9 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
             outofstock_df.fillna("-",inplace=True)
             outofstock_df['EXPECTED DRYOUT DATE/ TIME']="NA"
             # outofstock_df=read_frame(outofstockModel.objects.all())
-            outofstock_df['STATUS CRITICAL'] = 'Out of Stock'
+            outofstock_df['STATUS'] = 'Out of Stock'
             dryout_df = pd.concat([godry_df, outofstock_df], ignore_index=True)
-        dryout_df=dryout_df[['DO NAME','RO CODE','RO NAME','PRODUCT','STATUS CRITICAL','EXPECTED DRYOUT DATE/ TIME']] #'SUPPLY LOCATION','EXPECTED DRYOUT DATE/ TIME','TRANSIT TIME (HRS.)','STOCK SURVIVAL HOURS (HRS.)'
+        dryout_df=dryout_df[['DO NAME','RO CODE','RO NAME','PRODUCT','STATUS','EXPECTED DRYOUT DATE/ TIME']] #'SUPPLY LOCATION','EXPECTED DRYOUT DATE/ TIME','TRANSIT TIME (HRS.)','STOCK SURVIVAL HOURS (HRS.)'
         dryout_df['RO CODE']=dryout_df['RO CODE'].astype('str')
         dryout_df['RO CODE']=dryout_df['RO CODE'].map(lambda x:"0000"+str(x) if len(x)<=6 else x)
         dryout_df['RO-PRODUCT'] = dryout_df['RO CODE'] + '-' + +dryout_df['PRODUCT'].astype('str')
@@ -136,7 +147,7 @@ def Dryout(dryout_df=pd.DataFrame(),yv209d_df=pd.DataFrame(),yv208_df=pd.DataFra
     df_plan=df_yv208planned[df_yv208planned['Invoice']=="Planned/UnderLoading"]
     df_invoiced=df_yv208planned[df_yv208planned['Invoice']!="Planned/UnderLoading"]
     print(df_yv208planned)
-    df_con=pd.concat([df_yv209dpending[['DO NAME','RO CODE','RO NAME','PRODUCT','STATUS CRITICAL']],df_yv208planned[['DO NAME','RO CODE','RO NAME','PRODUCT','STATUS CRITICAL']]],ignore_index=True)
+    df_con=pd.concat([df_yv209dpending[['DO NAME','RO CODE','RO NAME','PRODUCT','STATUS']],df_yv208planned[['DO NAME','RO CODE','RO NAME','PRODUCT','STATUS']]],ignore_index=True)
     df_con['RO-PRODUCT'] = df_con['RO CODE'] + '-' + +df_con['PRODUCT'].astype('str')
     boolen_series=dryout_df['RO-PRODUCT'].isin(df_con['RO-PRODUCT'].values.tolist())
     df_filter=dryout_df[~boolen_series]
@@ -182,7 +193,7 @@ def index(request):
                     'TOTAL HOURS STOCK OUT'}.issubset(
                         x.columns):
                     df_out_of_stock = x.copy()
-                    df_out_of_stock['STATUS CRITICAL'] = 'Out of Stock'
+                    df_out_of_stock['STATUS'] = 'Out of Stock'
                     df_out_of_stock['RO CODE'] = df_out_of_stock['RO CODE'].map(str)
                     df_out_of_stock['PRODUCT'] = df_out_of_stock['PRODUCT'].map(str)
                     df_out_of_stock['RO CODE'] = df_out_of_stock['RO CODE'].map(
@@ -190,10 +201,10 @@ def index(request):
                     df_out_of_stock['RO-PRODUCT'] = df_out_of_stock['RO CODE'] + '-' + +df_out_of_stock['PRODUCT']
                     df_out_of_stock['EXPECTED DRYOUT DATE/ TIME']="NA"
                     df_out_of_stock = df_out_of_stock[
-                        ['SO NAME', 'DO NAME', 'SALES AREA', 'RO CODE', 'RO NAME', 'PRODUCT', 'STATUS CRITICAL',
+                        ['SO NAME', 'DO NAME', 'SALES AREA', 'RO CODE', 'RO NAME', 'PRODUCT', 'STATUS',
                             'RO-PRODUCT','EXPECTED DRYOUT DATE/ TIME']]
                 elif {'DO NAME', 'RO CODE', 'RO NAME', 'PRODUCT', 'EXPECTED DRYOUT DATE/ TIME',
-                        'STATUS CRITICAL'}.issubset(x.columns):
+                        'STATUS'}.issubset(x.columns):
                     df_about_to_dry = x.copy()
                     df_about_to_dry['RO CODE'] = df_about_to_dry['RO CODE'].map(str)
                     df_about_to_dry['PRODUCT'] = df_about_to_dry['PRODUCT'].map(str)
@@ -201,7 +212,7 @@ def index(request):
                         lambda m: '0000' + str(m) if len(m) < 8 else m)
                     df_about_to_dry['RO-PRODUCT'] = df_about_to_dry['RO CODE'] + '-' + +df_about_to_dry['PRODUCT']
                     df_about_to_dry = df_about_to_dry[
-                        ['SO NAME', 'DO NAME', 'SALES AREA', 'RO CODE', 'RO NAME', 'PRODUCT', 'STATUS CRITICAL',
+                        ['SO NAME', 'DO NAME', 'SALES AREA', 'RO CODE', 'RO NAME', 'PRODUCT', 'STATUS',
                             'RO-PRODUCT','EXPECTED DRYOUT DATE/ TIME']]
                 elif {'Ship2Party', 'Sales Document', 'REMARKS', 'Name 1','RTD(in KM)','Material'}.issubset(x.columns):
                     df=x.copy()
@@ -278,7 +289,9 @@ def index(request):
                 df_Phone['Mobile Number'] =df_temp['Mobile Number']   
                 print("df_dry=",df_dry[select.index(selected_list)])
                 df=pd.merge(left=df_dry[select.index(selected_list)],right=df_Phone,how='inner',left_on=[left[select.index(selected_list)]],right_on=['Ship-To Party']) 
+                print('select.index(selected_list)=======',select.index(selected_list))
                 df=df[HTMLColumn[select.index(selected_list)]]
+                
                 df = df.drop_duplicates(ignore_index=True) 
                 if set([selected_list]).issubset(set(sms_tables)):
                     df['SMS']="SMS"
@@ -309,6 +322,7 @@ def Muni(request):
             elif title=="YV209D-dryout":
                     message = "Dear {0}, Your SO no:{1} cannot be processed due to {2}. More information visit {3}. IOCL SALEM Terminal- MUNIYAPPAN".format("("+dictionary['RO CODE']+") "+dictionary['RO NAME'],dictionary['Sales Document'],dictionary['REMARKS'],website)
             elif title=='No indent':
+                    
                     message = "Dear {0}, Your RO is about to go dry for {1} at {2}. You are requested to place indent immediately to avoid dryout please . More info visit {3}. IOCL SALEM- MUNIYAPPAN".format("("+dictionary['RO CODE']+") "+dictionary['RO NAME'],dictionary['PRODUCT'],dictionary['EXPECTED DRYOUT DATE/ TIME'],website)
             mobileno.append('{0}'.format(MobileNumber))
             print("message=",message)
@@ -362,9 +376,18 @@ def Upload(request):
                     now = timezone.localtime(timezone.now())
                     current_date = now.strftime("%d-%m-%Y")
                     current_time = now.strftime("%H%M")
+                    print("df.column=-o-[piouiyugjyh",df.columns)
+                    print('columns',Columns)
+                    # if ('Ship-to Party of unack. Invoice' in df.columns):
+                    #     df.rename(columns={'Ship-to Party of unack. Invoice': 'Ship2Party'})
+                    #     print("df.column changed",df.columns)
                     for j,column in enumerate(Columns):
+                        if set(['Plant','Vehicle Number','Transport Tender Reference','Carrier',
+                        'Name','Reprt Date','Reprt Time','Remarks','Error Type','Ship2Party']).issubset(df.columns):
+                            print("list equal ==",i)
                         if set(column).issubset(df.columns):
                             df = df[column]
+                            print("df ferdfv",df)
                             df['TimeStamp'] = current_date + "(" + current_time + ")"
                             df['ModifiedBy'] = request.user.first_name
                             # df['id'] = df.index
@@ -397,12 +420,13 @@ def postSave(sender,instance,**kwargs):
 def postDelete(sender,instance,**kwargs):
     if False: # tank header density
         import datetime
-        from pyModbusTCP.client import ModbusClient
         from datetime import datetime, time
+
+        import pypyodbc
+        from pymodbus.client.sync import ModbusTcpClient
         from pymodbus.constants import Endian
         from pymodbus.payload import BinaryPayloadDecoder
-        from pymodbus.client.sync import ModbusTcpClient
-        import pypyodbc
+        from pyModbusTCP.client import ModbusClient
         client = ModbusTcpClient('192.168.1.124', port=503)
         connection = client.connect()
         while not connection:
@@ -477,3 +501,47 @@ def postDelete(sender,instance,**kwargs):
     print('postDelete Triggered')
 post_delete.connect(postDelete,sender=empModel)
 post_save.connect(postSave,sender=empModel)
+
+def IndentStatus(request):
+    if "GET" == request.method:
+        engine,database_name=engineCreate()
+        df=pd.read_sql("select * from {0}.{1}".format(database_name,dbTableName['yv209d']), con=engine)
+        df=df[df['Distribution Channel']!='CO']
+        df=df[[
+       'Requested delivdate', 'Sales Document',
+       'Ship2Party', 'Name 1', 'RTD(in KM)', 'Material', 'OrderQty',
+       'Target quantity UoM', 'Truck no', 'Sales Group Desc', 'REMARKS']]
+        print("df.columns",df.columns)
+        arg_time=dbModifiedBy()
+        arg={"header":df.columns,"data":df.values.tolist(),"select":"Indent ("+arg_time['timestamp'][6]+')'}
+        return render(request, 'Operations/dryout.html',arg)
+def TTError(request):
+    if "GET" == request.method:
+        engine,database_name=engineCreate()
+        df=pd.read_sql('select * from {0}.{1}'.format(database_name,dbTableName['yvr204q']), con=engine)
+        df=df[['Plant', 'Vehicle Number',
+       'Transport Tender Reference', 'Carrier', 'Name', 'Reprt Date',
+       'Reprt Time', 'Remarks', 'Error Type',
+       'Ship-to Party of unack Invoice']]
+        print("df.columns",df.columns)
+        arg_time=dbModifiedBy()
+        arg={"header":df.columns,"data":df.values.tolist(),"select":"TT Queue Error ("+arg_time['timestamp'][7]+')'}
+        return render(request, 'Operations/dryout.html',arg)
+
+def OfficerHelp(request):
+    if request.user.is_superuser: #True:
+        if request.method == "GET":
+            return redirect("https://storage.cloud.google.com/salemterminal_media/officerhelp.pdf")
+        else:
+            return redirect("/")
+    else:
+        return redirect("/")
+
+def VendorHelp(request): 
+    if not request.user.is_superuser: #True:
+        if request.method == "GET":
+            return redirect("https://storage.cloud.google.com/salemterminal_media/vendorhelp.pdf")
+        else:
+            return redirect("/")
+    else:
+        return redirect("/")
